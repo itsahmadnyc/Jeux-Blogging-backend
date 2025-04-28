@@ -1,0 +1,42 @@
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes');
+const categoryRoutes = require('./routes/category.routes');
+const employeeRoutes = require('./routes/employee.routes');
+const commentUserRoutes = require('./routes/user-comment.route')
+require('dotenv').config();
+const sequelize = require('./config/database');
+const path = require('path');
+
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Routes
+app.use('/api', authRoutes);
+app.use('/api', userRoutes);
+app.use('/api', categoryRoutes);
+app.use('/api/employee', employeeRoutes);
+app.use('/api/user', commentUserRoutes);
+
+
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    message: "Welcome to Express API Kit! 🚀",
+    CreatedBy: "Express Generator API Kit Created by Muhammad Ahmad with ❤️.",
+    status: "Running Smoothly ✅",
+    version: "1.0.0",
+  });
+});
+
+module.exports = app;

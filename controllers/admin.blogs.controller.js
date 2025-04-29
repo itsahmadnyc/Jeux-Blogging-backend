@@ -26,7 +26,7 @@ exports.adminReadAllBlogs = async (req, res) => {
             publish: blog.publish,
             createdAt: blog.createdAt,
             updatedAt: blog.updatedAt,
-            author: blog.author,  
+            author: blog.author,
             category: blog.category,
         }));
 
@@ -39,13 +39,11 @@ exports.adminReadAllBlogs = async (req, res) => {
 
 
 
-
-
 exports.getCommentsByBlog = async (req, res) => {
     try {
-       
+
         const userId = req.user.id;
-        if(!userId){
+        if (!userId) {
             return response.notFound(res, "Token is missing or invalid")
         }
         const { blogId } = req.params;
@@ -55,31 +53,31 @@ exports.getCommentsByBlog = async (req, res) => {
 
         const comments = await Comment.findAll({
             where: {
-              blogId,
-              parentId: null, 
+                blogId,
+                parentId: null,
             },
             include: [
-              {
-                model: User,
-                as: 'author',
-                attributes: ['id', 'name', 'email'],
-              },
-              {
-                model: Comment,
-                as: 'replies',
-                include: [
-                  {
+                {
                     model: User,
                     as: 'author',
                     attributes: ['id', 'name', 'email'],
-                  },
-                ],
-              },
+                },
+                {
+                    model: Comment,
+                    as: 'replies',
+                    include: [
+                        {
+                            model: User,
+                            as: 'author',
+                            attributes: ['id', 'name', 'email'],
+                        },
+                    ],
+                },
             ],
             order: [['createdAt', 'DESC']],
-          });
+        });
 
-          return response.ok(res, "Comments with replies fetched successfully", {comments})
+        return response.ok(res, "Comments with replies fetched successfully", { comments })
     } catch (error) {
         console.error("Error to get comments");
         return response.internalServerError(res, "Failed to get blog comments..!", { error: error.message })
@@ -88,11 +86,25 @@ exports.getCommentsByBlog = async (req, res) => {
 
 
 
-exports.deleteBlogComments = async (req, res) =>{
-    try{
+exports.deleteBlogComments = async (req, res) => {
+    try {
+        const {blogId} = req.params;
+        const userId = req.user.id;
+if(!blogId){
+    return response.badRequest(res, "BlogId is required ..")
+}
+if(!userId){
+    return response.notFound(res, "Token is missing or invalid")
+}
 
-    }catch(error){
+const deleted = await Comment.destroy({where: {blogId}});
+
+
+
+
+return response.ok(res, `Deleted comments of blog Id of${blogId}`)
+    } catch (error) {
         console.error("Error to delete blog comment");
-        return response.internalServerError(res, "Failed to delete Blog Comments", {error: error.message})
+        return response.internalServerError(res, "Failed to delete Blog Comments", { error: error.message })
     }
 }

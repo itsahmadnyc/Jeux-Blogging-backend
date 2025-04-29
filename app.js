@@ -1,5 +1,12 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const app = express();
+const passport = require('passport');
+require('./config/passport');
+const session = require('express-session');
+
+
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
@@ -8,15 +15,31 @@ const employeeRoutes = require('./routes/employee.routes');
 const commentUserRoutes = require('./routes/user-comment.route');
 const adminStats = require("./routes/admin-stats.routes");
 const uploadRoutes = require('./routes/upload.routes');
+const adminReadBlogsRoutes = require('./routes/admin.blogs.routes');
 require('dotenv').config();
 const sequelize = require('./config/database');
-const path = require('path');
 
 
-const app = express();
+
+
+
+app.use(session({
+  secret: 'jeux-secret',
+  resave: false,
+  saveUninitialized: true
+}));
+//INITIALIZE PASSPORT
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000', // Frontend url
+  credentials: true,
+}));
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -31,6 +54,7 @@ app.use('/api/employee', employeeRoutes);
 app.use('/api/user', commentUserRoutes);
 app.use('/api/admin', adminStats);
 app.use('/api', uploadRoutes);
+app.use('/api/blog', adminReadBlogsRoutes);
 
 
 

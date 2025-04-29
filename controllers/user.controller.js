@@ -226,7 +226,7 @@ exports.updateProfileImage = async (req, res) => {
       return response.badRequest(res, 'No image uploaded');
     }
 
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const baseUrl = process.env.BASE_URL;
     const profileImageUrl = `${baseUrl}/uploads/${req.file.filename}`;
 
     const user = await User.findByPk(userId);

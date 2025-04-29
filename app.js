@@ -5,7 +5,9 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const categoryRoutes = require('./routes/category.routes');
 const employeeRoutes = require('./routes/employee.routes');
-const commentUserRoutes = require('./routes/user-comment.route')
+const commentUserRoutes = require('./routes/user-comment.route');
+const adminStats = require("./routes/admin-stats.routes");
+const uploadRoutes = require('./routes/upload.routes');
 require('dotenv').config();
 const sequelize = require('./config/database');
 const path = require('path');
@@ -27,6 +29,8 @@ app.use('/api', userRoutes);
 app.use('/api', categoryRoutes);
 app.use('/api/employee', employeeRoutes);
 app.use('/api/user', commentUserRoutes);
+app.use('/api/admin', adminStats);
+app.use('/api', uploadRoutes);
 
 
 

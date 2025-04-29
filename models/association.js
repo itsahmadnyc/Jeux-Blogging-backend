@@ -49,11 +49,16 @@ module.exports = (sequelize) => {
     // Blogs → Comments
     Blog.hasMany(Comment, {
         foreignKey: 'blogId',
-        as: 'comments'
-    });
+        as: 'comments',
+        constraints: false ,
+    },
+);
+
+
     Comment.belongsTo(Blog, {
         foreignKey: 'blogId',
-        as: 'blog'
+        as: 'blog', 
+        constraints: false ,
     });
 
     // User → Category

@@ -15,7 +15,7 @@ router.post('/login',authMiddleware, login);
 
 // ROUTE TO INITIATE GOOGLE AUTHENTICATION
 router.get('/google', passport.authenticate('google', {
-    scope: ['profile', 'email']
+    scope: ['profile', 'email'] // FROM GOOGLE 
   }));
 
 

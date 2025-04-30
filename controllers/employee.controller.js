@@ -1,4 +1,6 @@
 const { User, Blog, Category, Comment, Like } = require('../models');
+const Subscriber = require('../models/Subscriber');
+const { sendEmail } = require('../services/emailService');
 const response = require('../utils/responseHandler');
 const { Op } = require("sequelize");
 
@@ -29,6 +31,24 @@ exports.createBlog = async (req, res) => {
       publish,
       tags,
     });
+
+    if (publish === true || publish === 1){
+      const subscribers = await Subscriber.findAll();
+      const users = await User.findAll({where: {role: 'user'}});
+
+      const allEmails = [
+        ...subscribers.map(s => s.email),
+        ...users.map(u => u.email)
+      ];
+
+      const subject = `New Blog pulished: ${title}`
+      const message = `Hi,\n\nA new blog titled "${title}" has been published on Jeux.\n\nVisit our site to read it.\n\nBest,\nJeux developer Team`;
+    
+
+    for(const email of allEmails){
+      await sendEmail(email, subject, message)
+    }
+  }
 
     const msg = publish ? 'Blog published successfully' : 'Blog saved as draft';
     return response.created(res, msg, { blog: newBlog });

@@ -1,6 +1,6 @@
 
 module.exports = (sequelize) => {
-    const { User, Blog, Comment, Category, Like, UserVisit } = sequelize.models;
+    const { User, Blog, Comment, Category, Like, UserVisit, MediaFiles } = sequelize.models;
 
     //User → Blogs
     User.hasMany(Blog, {
@@ -50,15 +50,15 @@ module.exports = (sequelize) => {
     Blog.hasMany(Comment, {
         foreignKey: 'blogId',
         as: 'comments',
-        constraints: false ,
+        constraints: false,
     },
-);
+    );
 
 
     Comment.belongsTo(Blog, {
         foreignKey: 'blogId',
-        as: 'blog', 
-        constraints: false ,
+        as: 'blog',
+        constraints: false,
     });
 
     // User → Category
@@ -82,6 +82,13 @@ module.exports = (sequelize) => {
         as: 'category'
     });
 
+    //MediaFiles → User
+    MediaFiles.belongsTo(User, {
+        foreignKey: "userId",
+        as: "user"
+    });
+
+
     // For Nested Comment associations
     Comment.belongsTo(Comment, {
         as: 'parent',
@@ -94,7 +101,7 @@ module.exports = (sequelize) => {
         onDelete: 'CASCADE',
     });
 
-    
+
     UserVisit.belongsTo(User, {
         foreignKey: 'userId',
         as: 'user'

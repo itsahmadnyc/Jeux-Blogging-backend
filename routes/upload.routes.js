@@ -8,13 +8,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
 
 
 
-router.post('/upload', authMiddleware, mediaUploadHandler.fields([
-    { name: 'image', maxCount: 1 },
-    { name: 'video', maxCount: 1 },
-    { name: 'audio', maxCount: 1 },
-    { name: 'document', maxCount: 1 }
-  ]), uploadMedia);
-
+router.post('/upload', authMiddleware, mediaUploadHandler, uploadMedia);
 
 
 

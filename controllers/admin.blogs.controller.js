@@ -99,9 +99,6 @@ if(!userId){
 
 const deleted = await Comment.destroy({where: {blogId}});
 
-
-
-
 return response.ok(res, `Deleted comments of blog Id of${blogId}`)
     } catch (error) {
         console.error("Error to delete blog comment");

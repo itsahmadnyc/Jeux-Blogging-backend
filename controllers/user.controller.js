@@ -1,32 +1,30 @@
 const { User, Blog, Category, Like, Comment } = require("../models");
 const { sendEmail } = require("../services/emailService");
 const response = require("../utils/responseHandler");
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const { buildCommentTree } = require("../utils/buildCommentTree");
 
-
-
-const JWT_SECRET = process.env.JWT_SECRET || 'secret-key';
-
-
-
-
-
+const JWT_SECRET = process.env.JWT_SECRET || "secret-key";
 
 // ADD EMPLOYEE
 exports.addEmployee = async (req, res) => {
   try {
-
     const { name, email, password, employeeId } = req.body;
 
     // Basic validation
     if (!name || !email || !password || !employeeId) {
-      return response.badRequest(res, 'Name, email, Password and EmployeeId are required');
+      return response.badRequest(
+        res,
+        "Name, email, Password and EmployeeId are required"
+      );
     }
 
     if (password.length < 6) {
-      return response.badRequest(res, 'Password must be at least 6 characters long');
+      return response.badRequest(
+        res,
+        "Password must be at least 6 characters long"
+      );
     }
 
     //   const existingUser = await User.findOne({ where: { email } });
@@ -36,10 +34,11 @@ exports.addEmployee = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
 
-
-    const profileImage = req.file ? `${baseUrl}/uploads/${req.file.filename}` : null;
+    const profileImage = req.file
+      ? `${baseUrl}/uploads/${req.file.filename}`
+      : null;
 
     const employee = await User.create({
       name,
@@ -47,12 +46,16 @@ exports.addEmployee = async (req, res) => {
       password: hashedPassword,
       profileImage,
       employeeId,
-      role: 'employee', // FORCE ROLE AS EMPLOYEE
+      role: "employee", // FORCE ROLE AS EMPLOYEE
     });
 
-    const token = jwt.sign({ id: employee.id, role: employee.role }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign(
+      { id: employee.id, role: employee.role },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
-    return response.created(res, 'Employee added successfully', {
+    return response.created(res, "Employee added successfully", {
       id: employee.id,
       name: employee.name,
       email: employee.email,
@@ -62,48 +65,61 @@ exports.addEmployee = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error('Add Employee Error:', error);
-    return response.internalServerError(res, 'Failed to add employee', { error: error.message });
+    console.error("Add Employee Error:", error);
+    return response.internalServerError(res, "Failed to add employee", {
+      error: error.message,
+    });
   }
 };
-
 
 //GET ALL EMPLOYEE
 exports.getAllEmployees = async (req, res) => {
   try {
     const employees = await User.findAll({
-      where: { role: 'employee' },
-      attributes: ['id', 'name', 'email', 'profileImage', 'employeeId', 'createdAt'],
-      order: [['createdAt', 'DESC']]
+      where: { role: "employee" },
+      attributes: [
+        "id",
+        "name",
+        "email",
+        "profileImage",
+        "employeeId",
+        "createdAt",
+      ],
+      order: [["createdAt", "DESC"]],
     });
 
-    return response.ok(res, 'Employees fetched successfully', { employees });
+    return response.ok(res, "Employees fetched successfully", { employees });
   } catch (error) {
-    console.error('Get All Employees Error:', error);
-    return response.internalServerError(res, 'Failed to fetch employees', { error: error.message });
+    console.error("Get All Employees Error:", error);
+    return response.internalServerError(res, "Failed to fetch employees", {
+      error: error.message,
+    });
   }
 };
-
 
 //DELETE EMPLOYEE
 exports.deleteEmployee = async (req, res) => {
   try {
     const { id } = req.params;
-    const employee = await User.findOne({ where: { id, role: 'employee' } });
+    const employee = await User.findOne({ where: { id, role: "employee" } });
 
     if (!employee) {
-      return response.notFound(res, 'Employee not found or not authorized to delete');
+      return response.notFound(
+        res,
+        "Employee not found or not authorized to delete"
+      );
     }
 
     await employee.destroy();
 
-    return response.deleted(res, 'Employee deleted successfully');
+    return response.deleted(res, "Employee deleted successfully");
   } catch (error) {
-    console.error('Delete Employee Error:', error);
-    return response.internalServerError(res, 'Failed to delete employee', { error: error.message });
+    console.error("Delete Employee Error:", error);
+    return response.internalServerError(res, "Failed to delete employee", {
+      error: error.message,
+    });
   }
 };
-
 
 // UPDATE EMPLOYEE
 exports.updateEmployee = async (req, res) => {
@@ -111,33 +127,34 @@ exports.updateEmployee = async (req, res) => {
     const { id } = req.params;
 
     const { name, email, password, employeeId } = req.body;
-    const employee = await User.findOne({ where: { id, role: 'employee' } });
+    const employee = await User.findOne({ where: { id, role: "employee" } });
 
     if (!employee) {
-      return response.notFound(res, 'Employee not found');
+      return response.notFound(res, "Employee not found");
     }
 
     if (name) employee.name = name;
     if (email) employee.email = email;
     if (employeeId) employee.employeeId = employeeId;
 
-
     if (password) {
       if (password.length < 6) {
-        return response.badRequest(res, 'Password must be at least 6 characters long');
+        return response.badRequest(
+          res,
+          "Password must be at least 6 characters long"
+        );
       }
       employee.password = await bcrypt.hash(password, 10);
     }
 
-
     if (req.file) {
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const baseUrl = `${req.protocol}://${req.get("host")}`;
       employee.profileImage = `${baseUrl}/uploads/${req.file.filename}`;
     }
 
     await employee.save();
     return res.status(200).json({
-      message: 'Employee updated successfully',
+      message: "Employee updated successfully",
       status: 200,
       data: {
         id: employee.id,
@@ -146,76 +163,77 @@ exports.updateEmployee = async (req, res) => {
         employeeId: employee.employeeId,
         profileImage: employee.profileImage,
         role: employee.role,
-      }
+      },
     });
-
   } catch (error) {
-    console.error('Update Employee Error:', error);
-    return response.internalServerError(res, 'Failed to update employee', { error: error.message });
+    console.error("Update Employee Error:", error);
+    return response.internalServerError(res, "Failed to update employee", {
+      error: error.message,
+    });
   }
 };
-
 
 //EMPLOYEE BY ID
 exports.getEmployeeById = async (req, res) => {
   try {
-
     const { id } = req.params;
     const employee = await User.findOne({
       where: { id },
-      attributes: ['id', 'name', 'email', 'role', 'createdAt', 'updatedAt']
+      attributes: ["id", "name", "email", "role", "createdAt", "updatedAt"],
     });
     if (!employee) {
-      return response.notFound(res, 'Employee not found');
+      return response.notFound(res, "Employee not found");
     }
 
-    return response.ok(res, "Employee fetched by id successfully", { employee });
-
+    return response.ok(res, "Employee fetched by id successfully", {
+      employee,
+    });
   } catch (error) {
     console.error("Error to get Employee");
-    return response.internalServerError(res, 'Failed to add employee', { error: error.message });
+    return response.internalServerError(res, "Failed to add employee", {
+      error: error.message,
+    });
   }
-}
+};
 
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
-      where: { role: 'user' },
-      attributes: ['id', 'name', 'email', 'profileImage', 'createdAt'],
-      order: [['createdAt', 'DESC']],
+      where: { role: "user" },
+      attributes: ["id", "name", "email", "profileImage", "createdAt"],
+      order: [["createdAt", "DESC"]],
     });
 
-    return response.ok(res, 'All users fetched successfully', { users });
+    return response.ok(res, "All users fetched successfully", { users });
   } catch (error) {
-    console.error('Error fetching users:', error.message);
-    return response.internalServerError(res, 'Failed to fetch users', { error: error.message });
+    console.error("Error fetching users:", error.message);
+    return response.internalServerError(res, "Failed to fetch users", {
+      error: error.message,
+    });
   }
 };
-
 
 exports.deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const user = await User.findOne({ where: { id, role: 'user' } });
+    const user = await User.findOne({ where: { id, role: "user" } });
     if (!user) {
-      return response.notFound(res, 'User not found');
+      return response.notFound(res, "User not found");
     }
 
     await user.destroy();
 
-    return response.deleted(res, 'User deleted successfully');
+    return response.deleted(res, "User deleted successfully");
   } catch (error) {
-    console.error('Error deleting user:', error.message);
-    return response.internalServerError(res, 'Failed to delete user', { error: error.message });
+    console.error("Error deleting user:", error.message);
+    return response.internalServerError(res, "Failed to delete user", {
+      error: error.message,
+    });
   }
 };
 
-
-
-
 // BELOW ARE, AS A USER CONTROLLERS
-
 
 exports.updateProfileImage = async (req, res) => {
   try {
@@ -223,7 +241,7 @@ exports.updateProfileImage = async (req, res) => {
 
     console.log("userId", userId);
     if (!req.file) {
-      return response.badRequest(res, 'No image uploaded');
+      return response.badRequest(res, "No image uploaded");
     }
 
     const baseUrl = process.env.BASE_URL;
@@ -231,36 +249,34 @@ exports.updateProfileImage = async (req, res) => {
 
     const user = await User.findByPk(userId);
     if (!user) {
-      return response.notFound(res, 'User not found');
+      return response.notFound(res, "User not found");
     }
 
     user.profileImage = profileImageUrl;
     await user.save();
 
-    return response.updated(res, 'Profile image updated', {
+    return response.updated(res, "Profile image updated", {
       id: user.id,
       name: user.name,
       profileImage: user.profileImage,
     });
-
   } catch (error) {
-    console.error('Update profile image error:', error);
-    return response.internalServerError(res, 'Failed to update image', { error: error.message });
+    console.error("Update profile image error:", error);
+    return response.internalServerError(res, "Failed to update image", {
+      error: error.message,
+    });
   }
 };
-
-
 
 // User Contact Us , Send mail to Specific mail Id
 exports.contactUs = async (req, res) => {
   try {
-
     // const userId = req.user.id;
 
     const { name, email, description } = req.body;
 
     if (!name || !email || !description) {
-      return response.badRequest(res, 'All fields are required..!');
+      return response.badRequest(res, "All fields are required..!");
     }
     const subject = `New Contact Request from ${name}`;
     const text = `
@@ -274,53 +290,54 @@ You have received a new contact request from a user:
 This request was submitted through the Jeux platform.
    `;
 
-    await sendEmail('hassanbaghbaan@gmail.com', subject, text);
-    return response.ok(res, 'Thank you! Your message has been sent successfully. We will get back to you shortly soon.');
-
-
+    await sendEmail("hassanbaghbaan@gmail.com", subject, text);
+    return response.ok(
+      res,
+      "Thank you! Your message has been sent successfully. We will get back to you shortly soon."
+    );
   } catch (error) {
-    console.error('Error to send Email ', error);
-    return response.internalServerError(res, 'Failed to update image', { error: error.message });
-
+    console.error("Error to send Email ", error);
+    return response.internalServerError(res, "Failed to update image", {
+      error: error.message,
+    });
   }
-}
-
-
+};
 
 exports.userGetAllBlogs = async (req, res) => {
   try {
     const blogs = await Blog.findAll({
       where: { publish: true },
-      order: [['createdAt', 'DESC']],
+      order: [["createdAt", "DESC"]],
       include: [
         {
           model: User,
-          as: 'author',
-          attributes: ['id', 'name', 'email'],
+          as: "author",
+          attributes: ["id", "name", "email"],
         },
         {
           model: Category,
-          as: 'category',
-          attributes: ['id', 'name'],
+          as: "category",
+          attributes: ["id", "name"],
         },
-
       ],
     });
 
     if (!blogs || blogs.length === 0) {
-      return response.ok(res, 'No published blogs available at the moment.', { blogs: [] });
+      return response.ok(res, "No published blogs available at the moment.", {
+        blogs: [],
+      });
     }
 
-    return response.ok(res, 'All published blogs fetched successfully.', { blogs });
-
+    return response.ok(res, "All published blogs fetched successfully.", {
+      blogs,
+    });
   } catch (error) {
-    console.error(' Error fetching blogs:', error);
-    return response.internalServerError(res, 'Failed to fetch blogs.', { error: error.message });
+    console.error(" Error fetching blogs:", error);
+    return response.internalServerError(res, "Failed to fetch blogs.", {
+      error: error.message,
+    });
   }
 };
-
-
-
 
 exports.likeOrDislikeBlog = async (req, res) => {
   try {
@@ -328,21 +345,23 @@ exports.likeOrDislikeBlog = async (req, res) => {
     const { type } = req.body;
     const userId = req.user.id;
 
-    if (!['like', 'dislike'].includes(type)) {
-      return response.notFound(res, 'Invalid type, must be "like" or "dislike". ')
+    if (!["like", "dislike"].includes(type)) {
+      return response.notFound(
+        res,
+        'Invalid type, must be "like" or "dislike". '
+      );
     }
     const blog = await Blog.findByPk(blogId);
     if (!blog) {
-      return response.notFound(res, "Blog not found..!")
+      return response.notFound(res, "Blog not found..!");
     }
 
     const [reaction, created] = await Like.findOrCreate({
       where: { blogId, userId },
-      defaults: { type }
+      defaults: { type },
     });
 
     if (!created) {
-
       if (reaction.type === type) {
         await reaction.destroy();
         return response.ok(res, `${type} removed`, { blogId, userId });
@@ -356,12 +375,11 @@ exports.likeOrDislikeBlog = async (req, res) => {
     return response.created(res, `${type} added`, { blogId, userId });
   } catch (error) {
     console.error(error);
-    return response.internalServerError(res, 'Server Error', { error: error.message });
+    return response.internalServerError(res, "Server Error", {
+      error: error.message,
+    });
   }
 };
-
-
-
 
 exports.addCommentsOrReply = async (req, res) => {
   try {
@@ -378,8 +396,6 @@ exports.addCommentsOrReply = async (req, res) => {
       return response.notFound(res, "Blog is not found");
     }
 
-
-
     if (!userId) {
       return response.notFound(res, "Token is missing or invalid..!");
     }
@@ -387,7 +403,7 @@ exports.addCommentsOrReply = async (req, res) => {
     if (parentId) {
       const parentComment = await Comment.findByPk(parentId);
       if (!parentComment) {
-        return res.status(404).json({ message: 'Parent comment not found' });
+        return res.status(404).json({ message: "Parent comment not found" });
       }
     }
 
@@ -398,35 +414,36 @@ exports.addCommentsOrReply = async (req, res) => {
       parentId: parentId || null,
     });
 
-    return response.ok(res, 'Comment is added successfully', comment);
-
+    return response.ok(res, "Comment is added successfully", comment);
   } catch (error) {
     console.error("Error in addCommentsOrReply:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-
 exports.userDeleteAccount = async (req, res) => {
   try {
-
     const userId = req.user.id;
     if (!userId) {
-      return response.notFound(res, 'Token is missing or inValid..!');
+      return response.notFound(res, "Token is missing or inValid..!");
     }
     const user = await User.findByPk(userId);
     if (!user) {
-      return response.notFound(res, 'User is not found..!')
+      return response.notFound(res, "User is not found..!");
     }
     await user.destroy();
-    return response.deleted(res, 'User account has been deleted successfully..!');
-
+    return response.deleted(
+      res,
+      "User account has been deleted successfully..!"
+    );
   } catch (error) {
-    return response.internalServerError(res, "Server Error.! Faild to delete user account..!", { error: error.message })
+    return response.internalServerError(
+      res,
+      "Server Error.! Faild to delete user account..!",
+      { error: error.message }
+    );
   }
-}
-
-
+};
 
 exports.getCommentsWithReplies = async (req, res) => {
   try {
@@ -438,21 +455,22 @@ exports.getCommentsWithReplies = async (req, res) => {
         {
           model: User,
           as: "author",
-          attributes: ['id', 'name', 'email'],
-        }
+          attributes: ["id", "name", "email"],
+        },
       ],
-      order: [['createdAt', 'ASC']],
+      order: [["createdAt", "ASC"]],
     });
 
     const commentTree = buildCommentTree(comments);
 
     res.status(200).json({ success: true, comments: commentTree });
   } catch (error) {
-    console.error('Error fetching comments:', error);
-    res.status(500).json({ success: false, message: 'Something went wrong fetching comments' });
+    console.error("Error fetching comments:", error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Something went wrong fetching comments",
+      });
   }
 };
-
-
-
-

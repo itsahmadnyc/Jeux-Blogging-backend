@@ -38,7 +38,7 @@ app.use(passport.session());
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000', // Frontend url
+  origin: "*", // Frontend url
   credentials: true,
 }));
 app.use(bodyParser.json());

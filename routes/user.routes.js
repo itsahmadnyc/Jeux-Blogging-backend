@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/auth.middleware');
 const checkAdmin = require('../middlewares/admin/checkAdmin');
-const { addEmployee, getAllEmployees, deleteEmployee, updateEmployee, getEmployeeById, getAllUsers, deleteUser } = require('../controllers/user.controller');
+const { addEmployee, getAllEmployees, deleteEmployee, updateEmployee, getEmployeeById, getAllUsers, deleteUser, getAllContactRequests } = require('../controllers/user.controller');
 const { profileImage } = require('../middlewares/upload');
 
 
@@ -23,6 +23,8 @@ router.get('/employee/:id', authMiddleware, checkAdmin, getEmployeeById);
 
 router.get('/all-users', authMiddleware, checkAdmin, getAllUsers);
 router.delete('/delete-user/:id', authMiddleware, checkAdmin, deleteUser);
+
+router.get('/all-contacts', authMiddleware, getAllContactRequests);//
 
 
 

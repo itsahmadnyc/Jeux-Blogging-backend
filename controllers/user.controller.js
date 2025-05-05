@@ -271,14 +271,8 @@ exports.updateProfileImage = async (req, res) => {
 };
 
 
-
-
-
-
-
 exports.contactUs = async (req, res) => {
   try {
-    const userId = req.user?.id; // Optional if logged in
     const { name, email, phoneNumber, projectType } = req.body;
 
     if (!name || !email || !phoneNumber || !projectType) {
@@ -290,7 +284,7 @@ exports.contactUs = async (req, res) => {
       email,
       phoneNumber,
       projectType,
-      userId: userId || null,
+
     });
 
     // Email notification to admin
@@ -306,7 +300,7 @@ Project Type: ${projectType}
 
 Submitted via Jeux Platform.
     `;
-    await sendEmail('hassanbaghbaan@gmail.com', subject, text);
+    await sendEmail(email, subject, text);
 
     return response.created(res, 'Contact request submitted successfully!', contact);
   } catch (error) {
@@ -316,59 +310,25 @@ Submitted via Jeux Platform.
 };
 
 
+exports.getAllContactRequests = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    if (!userId) {
+      return response.notFound(res, "Token is missing or invalid");
+    }
 
+    const contacts = await ContactUs.findAll({
+      attributes: ['id', 'name', 'email', 'phoneNumber', 'projectType', 'createdAt', 'updatedAt'],
+      order: [['createdAt', 'DESC']]
+    });
+    return response.ok(res, "All Contacts fetched successfully", { contacts })
 
-// exports.contactUs = async (req, res) => {
-//   try {
-//     // const userId = req.user.id;
+  } catch (error) {
+    console.error("Error to get all Contacts", error);
+    return response.internalServerError(res, "Failed to fetch all contact ..!", { error: error.message })
+  }
 
-//     const { name, email, phoneNumber, projectType } = req.body;
-
-//     if (!name || !email || !description) {
-//       return response.badRequest(res, 'All fields are required..!');
-//     }
-
-// const [user, created] = await User.findOrCreate({
-// where: {email},
-// defaults: {
-//   name,
-//   phoneNumber,
-//   projectType
-// }
-// });
-
-// if(!created){
-//   await user.update({name, phoneNumber,projectType});
-// }
-
-//     const subject = `New Contact Request from ${name}`;
-//     const text = `
-// Hello Admin,
-// You have received a new contact request from a user:
-//  Name: ${name}
-//  Email: ${email}
-//  Phone Number: ${phoneNumber}
-// Project Type: ${projectType}
-
-
-// This request was submitted through the Jeux platform.
-//    `;
-
-//     await sendEmail("hassanbaghbaan@gmail.com", subject, text);
-//     return response.ok(
-//       res,
-//       "Thank you! Your message has been sent successfully. We will get back to you shortly soon."
-//     );
-//   } catch (error) {
-//     console.error("Error to send Email ", error);
-//     return response.internalServerError(res, "Failed to update image", {
-//       error: error.message,
-//     });
-//   }
-// };
-
-
-
+}
 
 
 

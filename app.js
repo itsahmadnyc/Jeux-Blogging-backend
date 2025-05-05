@@ -17,6 +17,10 @@ const adminStats = require("./routes/admin-stats.routes");
 const uploadRoutes = require('./routes/upload.routes');
 const adminReadBlogsRoutes = require('./routes/admin.blogs.routes');
 const newsletterRoutes = require("./routes/subscribe.routes")
+
+const publishDraftRoutes = require("./routes/publish-draft.routes");
+
+
 require('dotenv').config();
 const sequelize = require('./config/database');
 
@@ -57,6 +61,8 @@ app.use('/api/admin', adminStats);
 app.use('/api', uploadRoutes);
 app.use('/api/blog', adminReadBlogsRoutes);
 app.use('/api', newsletterRoutes);
+
+app.use('/api/emp',publishDraftRoutes);
 
 
 

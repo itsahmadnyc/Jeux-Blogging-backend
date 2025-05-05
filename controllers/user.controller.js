@@ -271,6 +271,7 @@ exports.updateProfileImage = async (req, res) => {
 };
 
 
+
 exports.contactUs = async (req, res) => {
   try {
     const { name, email, phoneNumber, projectType } = req.body;
@@ -297,7 +298,7 @@ Email: ${email}
 Phone Number: ${phoneNumber}
 Project Type: ${projectType}
 
-Submitted via Jeux Platform.
+Submitted via Jeux developers Platform.
     `;
     await sendEmail(email, subject, text);
 
@@ -320,7 +321,6 @@ exports.getAllContactRequests = async (req, res) => {
       attributes: ['id', 'name', 'email', 'phoneNumber', 'projectType', 'createdAt', 'updatedAt'],
       order: [['createdAt', 'DESC']]
     });
-    console.log('All Contact are..!', contacts);
     return response.ok(res, "All Contacts fetched successfully", { contacts })
 
   } catch (error) {

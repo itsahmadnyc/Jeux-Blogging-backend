@@ -58,9 +58,11 @@ exports.createBlog = async (req, res) => {
 
 
 
-exports.employeePublishedBlogs = async (req, res) => {
+exports.empPublishedBlogs = async (req, res) => {
   try {
     const userId = req.user.id;
+
+    console.log("User Is in Published Controller", userId)
 
     const publishedBlogs = await Blog.findAll({
       where: {
@@ -94,7 +96,7 @@ exports.employeePublishedBlogs = async (req, res) => {
 
 
 
-exports.employeeDraftBlogs = async (req, res) => {
+exports.empDraftBlogs = async (req, res) => {
   try {
     const userId = req.user.id;
 

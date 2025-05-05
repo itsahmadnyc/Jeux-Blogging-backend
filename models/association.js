@@ -109,19 +109,18 @@ module.exports = (sequelize) => {
 
 
 
-    
 
+    // User → ContactUs
     User.hasMany(ContactUs, {
         foreignKey: "userId",
         as: 'contacts'
     })
 
-
+    // ContactUs → User
     ContactUs.belongsTo(User, {
         foreignKey: 'userId',
         as: 'user',
         onDelete: 'CASCADE',
     });
-
 
 }

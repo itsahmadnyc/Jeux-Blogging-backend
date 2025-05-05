@@ -2,7 +2,7 @@ const checkAdmin = (req, res, next) => {
   const user = req.user;
   console.log('User from JWT in checkAdmin Middleware is:', user);
 
-  if (!user || user.role !== 'admin') {
+  if (!user || user.role !== 'employee') {
     return res.status(403).json({
       success: false,
       statusCode: 403,

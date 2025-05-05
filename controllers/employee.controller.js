@@ -1,6 +1,6 @@
 const { User, Blog, Category, Comment, Like } = require('../models');
 const Subscriber = require('../models/Subscriber');
-const { sendEmail } = require('../services/emailService');
+const notifyAllSubscribersAndUsers = require('../utils/notifyAllsubscriberfun');
 const response = require('../utils/responseHandler');
 const { Op } = require("sequelize");
 
@@ -10,13 +10,20 @@ const { Op } = require("sequelize");
 exports.createBlog = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { title, blogAuthor, content, categoryId, tags, publish = false } = req.body;
+    const {
+      title,
+      blogAuthor,
+      content,
+      categoryId,
+      tags,
+      publish = false,
+    } = req.body;
+
 
     if (!title || !content || !categoryId) {
-      return response.badRequest(res, 'Title, content and categoryId are required.');
+      return response.badRequest(res, 'Title, content, and categoryId are required.');
     }
 
-    // Optional: Check if category exists
     const category = await Category.findByPk(categoryId);
     if (!category) {
       return response.badRequest(res, 'Invalid categoryId. Category not found.');
@@ -32,32 +39,22 @@ exports.createBlog = async (req, res) => {
       tags,
     });
 
-    if (publish === true || publish === 1){
-      const subscribers = await Subscriber.findAll();
-      const users = await User.findAll({where: {role: 'user'}});
 
-      const allEmails = [
-        ...subscribers.map(s => s.email),
-        ...users.map(u => u.email)
-      ];
-
-      const subject = `New Blog pulished: ${title}`
-      const message = `Hi,\n\nA new blog titled "${title}" has been published on Jeux.\n\nVisit our site to read it.\n\nBest,\nJeux developer Team`;
-    
-
-    for(const email of allEmails){
-      await sendEmail(email, subject, message)
+    if (publish === true || publish === 1) {
+      await notifyAllSubscribersAndUsers(newBlog.title);
     }
-  }
 
-    const msg = publish ? 'Blog published successfully' : 'Blog saved as draft';
-    return response.created(res, msg, { blog: newBlog });
+    const message = publish ? 'Blog published successfully' : 'Blog saved as draft';
+    return response.created(res, message, { blog: newBlog });
 
   } catch (error) {
     console.error('Error creating blog:', error);
-    return response.internalServerError(res, 'Failed to create blog.', { error: error.message });
+    return response.internalServerError(res, 'Failed to create blog.', {
+      error: error.message,
+    });
   }
 };
+
 
 
 
@@ -125,7 +122,7 @@ exports.employeeDraftBlogs = async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching draft blogs:', error);
-    return response.internalServerError(res, "Failed to fetch draft blogs..!", {error: error.message})
+    return response.internalServerError(res, "Failed to fetch draft blogs..!", { error: error.message })
   }
 };
 
@@ -231,7 +228,7 @@ exports.empDeleteOwnBlog = async (req, res) => {
 
     const { blogId } = req.params;
     const userId = req.user.id;
-    if(!userId){
+    if (!userId) {
       return response.notFound(res, "Token is missing or invalid..!")
     }
 
@@ -247,12 +244,17 @@ exports.empDeleteOwnBlog = async (req, res) => {
       return response.notFound(res, "Blog not found or you do not have permission to delete this blog.")
     }
 
-    await blog.destroy();
-    return response.ok(res, "Employee account has been deleted successfully..!")
+    const deletedBlog = await blog.destroy();
+    return response.ok(res, "Employee account has been deleted successfully..!", { deletedBlog });
 
   } catch (error) {
     console.log('Error of delete blog');
     return response.internalServerError(res, "Failed to delete the employee blog", { error: error.message });
   }
 }
+
+
+
+
+
 

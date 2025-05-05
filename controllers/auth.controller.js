@@ -62,10 +62,23 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ where: { email } });
     if (!user) return response.notFound(res, 'User not found');
 
+    console.log('isBlocked:', user.isBlocked, 'role:', user.role);
+
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return response.badRequest(res, 'Invalid credentials');
+ 
+    if(user.isBlocked){
+
+      if(req.user.role !== 'admin'){
+        return response.unauthorized(res, "Access denied. Your account is blocked by Admin");
+      }
+    }
+
+
 
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+
     await user.save();
 
     return response.ok(res, 'Login successful', {
@@ -83,6 +96,12 @@ exports.login = async (req, res) => {
 
 
 
+
+
+
+
+
+
 exports.getProfile = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -97,3 +116,42 @@ exports.getProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+
+
+
+
+
+
+
+
+// exports.login = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     if (!email || !password) {
+//       return response.badRequest(res, 'Email and Password are required..!')
+//     }
+
+//     const user = await User.findOne({ where: { email } });
+//     if (!user) return response.notFound(res, 'User not found');
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) return response.badRequest(res, 'Invalid credentials');
+
+//     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+//     await user.save();
+
+//     return response.ok(res, 'Login successful', {
+//       id: user.id,
+//       name: user.name,
+//       email: user.email,
+//       role: user.role,
+//       token,
+//     });
+//   } catch (error) {
+//     console.error('Login Error:', error);
+//     return response.internalServerError(res, 'Something went wrong during login', { error: error.message });
+//   }
+// };
+

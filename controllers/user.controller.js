@@ -268,24 +268,41 @@ exports.updateProfileImage = async (req, res) => {
   }
 };
 
+
+
 // User Contact Us , Send mail to Specific mail Id
 exports.contactUs = async (req, res) => {
   try {
     // const userId = req.user.id;
 
-    const { name, email, description } = req.body;
+    const { name, email, phoneNumber, projectType } = req.body;
 
     if (!name || !email || !description) {
-      return response.badRequest(res, "All fields are required..!");
+      return response.badRequest(res, 'All fields are required..!');
     }
+
+const [user, created] = await User.findOrCreate({
+where: {email},
+defaults: {
+  name,
+  phoneNumber,
+  projectType
+}
+});
+
+if(!created){
+  await user.update({name, phoneNumber,projectType});
+}
+
     const subject = `New Contact Request from ${name}`;
     const text = `
 Hello Admin,
 You have received a new contact request from a user:
  Name: ${name}
-
  Email: ${email}
- Message: ${description}
+ Phone Number: ${phoneNumber}
+Project Type: ${projectType}
+
 
 This request was submitted through the Jeux platform.
    `;

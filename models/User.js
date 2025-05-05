@@ -14,6 +14,8 @@ const User = sequelize.define("User", {
   },
 
   password: { type: DataTypes.STRING, allowNull: false },
+  isBlocked:{ type: DataTypes.BOOLEAN, defaultValue: false},
+
   googleId: { type: DataTypes.STRING, unique: true },
   role: {
     type: DataTypes.ENUM("admin", "employee", "user"),

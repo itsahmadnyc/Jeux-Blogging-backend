@@ -1,4 +1,4 @@
-const { User, Blog, Category, Like, Comment } = require("../models");
+const { User, Blog, Category, Like, Comment, ContactUs } = require("../models");
 const { sendEmail } = require("../services/emailService");
 const response = require("../utils/responseHandler");
 const bcrypt = require("bcryptjs");
@@ -233,6 +233,8 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
+
+
 // BELOW ARE, AS A USER CONTROLLERS
 
 exports.updateProfileImage = async (req, res) => {
@@ -270,55 +272,106 @@ exports.updateProfileImage = async (req, res) => {
 
 
 
-// User Contact Us , Send mail to Specific mail Id
+
+
+
+
 exports.contactUs = async (req, res) => {
   try {
-    // const userId = req.user.id;
-
+    const userId = req.user?.id; // Optional if logged in
     const { name, email, phoneNumber, projectType } = req.body;
 
-    if (!name || !email || !description) {
-      return response.badRequest(res, 'All fields are required..!');
+    if (!name || !email || !phoneNumber || !projectType) {
+      return response.badRequest(res, 'All fields are required.');
     }
 
-const [user, created] = await User.findOrCreate({
-where: {email},
-defaults: {
-  name,
-  phoneNumber,
-  projectType
-}
-});
+    const contact = await ContactUs.create({
+      name,
+      email,
+      phoneNumber,
+      projectType,
+      userId: userId || null,
+    });
 
-if(!created){
-  await user.update({name, phoneNumber,projectType});
-}
-
+    // Email notification to admin
     const subject = `New Contact Request from ${name}`;
     const text = `
 Hello Admin,
-You have received a new contact request from a user:
- Name: ${name}
- Email: ${email}
- Phone Number: ${phoneNumber}
+
+You received a new contact request:
+Name: ${name}
+Email: ${email}
+Phone Number: ${phoneNumber}
 Project Type: ${projectType}
 
+Submitted via Jeux Platform.
+    `;
+    await sendEmail('hassanbaghbaan@gmail.com', subject, text);
 
-This request was submitted through the Jeux platform.
-   `;
-
-    await sendEmail("hassanbaghbaan@gmail.com", subject, text);
-    return response.ok(
-      res,
-      "Thank you! Your message has been sent successfully. We will get back to you shortly soon."
-    );
+    return response.created(res, 'Contact request submitted successfully!', contact);
   } catch (error) {
-    console.error("Error to send Email ", error);
-    return response.internalServerError(res, "Failed to update image", {
-      error: error.message,
-    });
+    console.error('Contact Us Error:', error);
+    return response.internalServerError(res, 'Something went wrong.', { error: error.message });
   }
 };
+
+
+
+
+// exports.contactUs = async (req, res) => {
+//   try {
+//     // const userId = req.user.id;
+
+//     const { name, email, phoneNumber, projectType } = req.body;
+
+//     if (!name || !email || !description) {
+//       return response.badRequest(res, 'All fields are required..!');
+//     }
+
+// const [user, created] = await User.findOrCreate({
+// where: {email},
+// defaults: {
+//   name,
+//   phoneNumber,
+//   projectType
+// }
+// });
+
+// if(!created){
+//   await user.update({name, phoneNumber,projectType});
+// }
+
+//     const subject = `New Contact Request from ${name}`;
+//     const text = `
+// Hello Admin,
+// You have received a new contact request from a user:
+//  Name: ${name}
+//  Email: ${email}
+//  Phone Number: ${phoneNumber}
+// Project Type: ${projectType}
+
+
+// This request was submitted through the Jeux platform.
+//    `;
+
+//     await sendEmail("hassanbaghbaan@gmail.com", subject, text);
+//     return response.ok(
+//       res,
+//       "Thank you! Your message has been sent successfully. We will get back to you shortly soon."
+//     );
+//   } catch (error) {
+//     console.error("Error to send Email ", error);
+//     return response.internalServerError(res, "Failed to update image", {
+//       error: error.message,
+//     });
+//   }
+// };
+
+
+
+
+
+
 
 exports.userGetAllBlogs = async (req, res) => {
   try {

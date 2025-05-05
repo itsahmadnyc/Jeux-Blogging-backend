@@ -5,11 +5,12 @@ const Like = require('./Like');
 const Comment = require('./Comment');
 const UserVisit = require('./UserVisit');
 const MediaFiles = require('./MediaFiles'); 
+const ContactUs = require('./ContactUs')
 
 
 
 const associate = require('./association');
-associate({ models: { User, Blog, Category, Like, Comment, UserVisit, MediaFiles } });
+associate({ models: { User, Blog, Category, Like, Comment, UserVisit, MediaFiles, ContactUs } });
 
 
-module.exports = {User, Blog, Category, Like, Comment, UserVisit, MediaFiles };
+module.exports = {User, Blog, Category, Like, Comment, UserVisit, MediaFiles, ContactUs };

@@ -30,6 +30,8 @@ router.delete('/delete-user/:id', authMiddleware, checkAdmin, deleteUser);
 router.put('/updateProfileImage', authMiddleware, profileImage, updateProfileImage);
 router.post('/contact', contactUs);
 
+
+
 router.get('/userAllBlogs', userGetAllBlogs);
 router.delete('/delete', authMiddleware, userDeleteAccount);
 router.post('/comment/:blogId', authMiddleware, addCommentsOrReply);

@@ -1,6 +1,6 @@
 
 module.exports = (sequelize) => {
-    const { User, Blog, Comment, Category, Like, UserVisit, MediaFiles } = sequelize.models;
+    const { User, Blog, Comment, Category, Like, UserVisit, MediaFiles, ContactUs } = sequelize.models;
 
     //User → Blogs
     User.hasMany(Blog, {
@@ -105,6 +105,22 @@ module.exports = (sequelize) => {
     UserVisit.belongsTo(User, {
         foreignKey: 'userId',
         as: 'user'
+    });
+
+
+
+    
+
+    User.hasMany(ContactUs, {
+        foreignKey: "userId",
+        as: 'contacts'
+    })
+
+
+    ContactUs.belongsTo(User, {
+        foreignKey: 'userId',
+        as: 'user',
+        onDelete: 'CASCADE',
     });
 
 

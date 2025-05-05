@@ -284,7 +284,6 @@ exports.contactUs = async (req, res) => {
       email,
       phoneNumber,
       projectType,
-
     });
 
     // Email notification to admin
@@ -321,6 +320,7 @@ exports.getAllContactRequests = async (req, res) => {
       attributes: ['id', 'name', 'email', 'phoneNumber', 'projectType', 'createdAt', 'updatedAt'],
       order: [['createdAt', 'DESC']]
     });
+    console.log('All Contact are..!', contacts);
     return response.ok(res, "All Contacts fetched successfully", { contacts })
 
   } catch (error) {

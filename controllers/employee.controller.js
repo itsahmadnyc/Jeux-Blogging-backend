@@ -1,5 +1,6 @@
 const { User, Blog, Category, Comment, Like } = require('../models');
 const Subscriber = require('../models/Subscriber');
+const { buildCommentTree } = require('../utils/buildCommentTree');
 const notifyAllSubscribersAndUsers = require('../utils/notifyAllsubscriberfun');
 const response = require('../utils/responseHandler');
 const { Op } = require("sequelize");
@@ -71,7 +72,6 @@ exports.createBlog = async (req, res) => {
 };
 
 
-
 exports.empPublishedBlogs = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -116,7 +116,6 @@ exports.empPublishedBlogs = async (req, res) => {
     return response.internalServerError(res, 'Failed to fetch published blogs.', { error: error.message });
   }
 };
-
 
 
 exports.empDraftBlogs = async (req, res) => {
@@ -289,7 +288,6 @@ exports.empDeleteOwnBlog = async (req, res) => {
 
 
 
-
 exports.empGetBlogById = async (req, res) => {
   try {
     const blogId = req.params.id;
@@ -311,30 +309,6 @@ exports.empGetBlogById = async (req, res) => {
           as: 'author',
           attributes: ['id', 'name', 'email'],
         },
-        {
-          model: Comment,
-          as: 'comments',
-          where: { parentId: null },
-          required: false,
-          include: [
-            {
-              model: User,
-              as: 'author',
-              attributes: ['id', 'name', 'email'],
-            },
-            {
-              model: Comment,
-              as: 'replies',
-              include: [
-                {
-                  model: User,
-                  as: 'author',
-                  attributes: ['id', 'name', 'email'],
-                },
-              ],
-            },
-          ],
-        },
       ],
     });
 
@@ -342,14 +316,31 @@ exports.empGetBlogById = async (req, res) => {
       return response.notFound(res, "Blog not found or you're not authorized to view it.");
     }
 
-    const totalComments = await Comment.count({ where: { blogId } });
 
-    const APP_BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
+    const comments = await Comment.findAll({
+      where: { blogId },
+      include: [
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'name', 'email']
+        }
+      ],
+      order: [['createdAt', 'ASC']],
+    });
+
+    const nestedComments = buildCommentTree(comments);
+
+    const totalComments = comments.length;
+
+
     const blogData = blog.toJSON();
     blogData.thumbnailUrl = blog.thumbnail
       ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
       : null;
     blogData.totalComments = totalComments;
+    blogData.comments = nestedComments;
+    console.log("Blog data in EmpGetBlogById",blogData);
 
     return response.ok(res, 'Blog fetched successfully.', { blog: blogData });
 
@@ -365,59 +356,3 @@ exports.empGetBlogById = async (req, res) => {
 
 
 
-// exports.empGetBlogById = async (req, res) => {
-//   try {
-//     const blogId = req.params.id;
-//     const userId = req.user.id;
-
-//     const blog = await Blog.findOne({
-//       where: {
-//         id: blogId,
-//         userId, // ensure employee can only fetch their own blog
-//       },
-//       include: [
-//         {
-//           model: Category,
-//           as: 'category',
-//           attributes: ['id', 'name'],
-//         },
-//         {
-//           model: User,
-//           as: 'author',
-//           attributes: ['id', 'name', 'email'],
-//         },
-//         {
-//           model: Comment,
-//           as: 'comments',
-//           attributes: ['id', 'content', 'userId', 'blogId', 'parentId', 'createdAt'],
-//           include: [
-//             {
-//               model: User,
-//               as: 'author',
-//               attributes: ['id', 'name', 'email'],
-//             },
-//           ],
-//         },
-//       ],
-//     });
-
-//     if (!blog) {
-//       return response.notFound(res, "Blog not found or you are not authorized to view it.");
-//     }
-
-//     const APP_BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
-
-//     const blogData = blog.toJSON();
-//     blogData.thumbnailUrl = blog.thumbnail
-//       ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
-//       : null;
-
-//     return response.ok(res, 'Blog fetched successfully.', { blog: blogData });
-
-//   } catch (error) {
-//     console.error('Error fetching blog by ID:', error);
-//     return response.internalServerError(res, 'Failed to fetch blog.', {
-//       error: error.message,
-//     });
-//   }
-// };

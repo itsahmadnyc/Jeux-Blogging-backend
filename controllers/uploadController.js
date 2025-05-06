@@ -49,41 +49,5 @@ exports.uploadMedia = async (req, res) => {
 
 
 
-// exports.uploadMedia = async (req, res) => {
-//   const userId = req.user.id;
-//   if (!userId) {
-//     return response.notFound(res, 'Tokin is invalid or missing');
-//   }
-
-//   console.log("UserId in media Upload handler",userId )
-//   const uploadedFile = req.file.filename;
-
-
-//   if (!uploadedFile) {
-//     return response.notFound(res, "No file uploaded.");
-//   }
-
-//   const fileUrl = `${APP_BASE_URL}/uploads/${uploadedFile.filename}`;
-
-//   try {
-//     const mediaFiles = await MediaFiles.create({
-//       userId,
-//       fileUrl,
-
-//     })
-//     res.status(200).json({
-//       message: 'File uploaded successfully',
-//       data:{
-//         mediaFiles
-//       }
-//     });
-
-//   } catch (error) {
-//     console.error("Error to file Upload");
-//     return response.internalServerError(res, "Failed to Upload files")
-//   }
-
-// };
-
 
 

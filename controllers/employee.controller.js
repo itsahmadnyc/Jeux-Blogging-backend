@@ -1,7 +1,7 @@
 const { User, Blog, Category, Comment, Like } = require('../models');
 const Subscriber = require('../models/Subscriber');
 const { buildCommentTree } = require('../utils/buildCommentTree');
-const notifyAllSubscribersAndUsers = require('../utils/notifyAllsubscriberfun');
+const notifyAllSubscribersAndUsers = require("../utils/notifyAllsubscriberfun.js") 
 const response = require('../utils/responseHandler');
 const { Op } = require("sequelize");
 const APP_BASE_URL = process.env.BASE_URL;
@@ -19,7 +19,7 @@ exports.createBlog = async (req, res) => {
       content,
       categoryId,
       tags,
-      publish = false,
+      publish,
     } = req.body;
 
     if (!title || !content || !categoryId) {
@@ -50,10 +50,17 @@ exports.createBlog = async (req, res) => {
       thumbnail,
     });
 
+ 
+    const publishFlag = publish === 'true' || publish === true || publish === 1 || publish === '1';
 
-    if (publish === true || publish === 1) {
-      await notifyAllSubscribersAndUsers(newBlog.title);
-    }
+if (publishFlag) {
+  await notifyAllSubscribersAndUsers(newBlog.title);
+}
+
+ 
+    // if (publish === true || publish === 1) {
+    //   await notifyAllSubscribersAndUsers(newBlog.title);
+    // }
 
     const blogData = {
       ...newBlog.toJSON(),
@@ -340,7 +347,6 @@ exports.empGetBlogById = async (req, res) => {
       : null;
     blogData.totalComments = totalComments;
     blogData.comments = nestedComments;
-    console.log("Blog data in EmpGetBlogById",blogData);
 
     return response.ok(res, 'Blog fetched successfully.', { blog: blogData });
 

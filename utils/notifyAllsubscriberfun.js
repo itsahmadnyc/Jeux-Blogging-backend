@@ -5,6 +5,8 @@ const { sendEmail } = require("../services/emailService");
 const notifyAllSubscribersAndUsers = async (blogTitle) => {
     const subscribers = await Subscriber.findAll();
     const users = await User.findAll({ where: { role: 'user' } });
+
+    console.log("Subscriber and User", subscribers,users )
   
     const allEmails = [
       ...new Set([
@@ -13,6 +15,9 @@ const notifyAllSubscribersAndUsers = async (blogTitle) => {
       ])
     ];
   
+    console.log("Sending emails for blog:", blogTitle);
+
+
     const subject = `New Blog Published: ${blogTitle}`;
     const message = `Hi,\n\nA new blog titled "${blogTitle}" has been published on Jeux.\n\nVisit our site to read it.\n\nBest,\nJeux Developer Team`;
     const html = `

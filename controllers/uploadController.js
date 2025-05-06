@@ -14,8 +14,6 @@ exports.uploadMedia = async (req, res) => {
     return response.notFound(res, 'Token is invalid or missing');
   }
 
-  console.log("UserId in media Upload handler:", userId);
-
   const uploadedFile = req.file;
 
   if (!uploadedFile) {

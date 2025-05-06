@@ -72,8 +72,6 @@ exports.createBlog = async (req, res) => {
 
 
 
-
-
 exports.empPublishedBlogs = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -104,11 +102,11 @@ exports.empPublishedBlogs = async (req, res) => {
     }
 
 
-    const blogsWithUrl = publishedBlogs.map(blog =>{
+    const blogsWithUrl = publishedBlogs.map(blog => {
       const blogData = blog.toJSON();
       blogData.thumbnailUrl = blog.thumbnail
-      ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
-      : null;
+        ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
+        : null;
       return blogData;
     })
 
@@ -289,3 +287,137 @@ exports.empDeleteOwnBlog = async (req, res) => {
   }
 }
 
+
+
+
+exports.empGetBlogById = async (req, res) => {
+  try {
+    const blogId = req.params.id;
+    const userId = req.user.id;
+
+    const blog = await Blog.findOne({
+      where: {
+        id: blogId,
+        userId,
+      },
+      include: [
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'name', 'email'],
+        },
+        {
+          model: Comment,
+          as: 'comments',
+          where: { parentId: null },
+          required: false,
+          include: [
+            {
+              model: User,
+              as: 'author',
+              attributes: ['id', 'name', 'email'],
+            },
+            {
+              model: Comment,
+              as: 'replies',
+              include: [
+                {
+                  model: User,
+                  as: 'author',
+                  attributes: ['id', 'name', 'email'],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!blog) {
+      return response.notFound(res, "Blog not found or you're not authorized to view it.");
+    }
+
+    const totalComments = await Comment.count({ where: { blogId } });
+
+    const APP_BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
+    const blogData = blog.toJSON();
+    blogData.thumbnailUrl = blog.thumbnail
+      ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
+      : null;
+    blogData.totalComments = totalComments;
+
+    return response.ok(res, 'Blog fetched successfully.', { blog: blogData });
+
+  } catch (error) {
+    console.error('Error fetching blog by ID:', error);
+    return response.internalServerError(res, 'Failed to fetch blog.', {
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+
+// exports.empGetBlogById = async (req, res) => {
+//   try {
+//     const blogId = req.params.id;
+//     const userId = req.user.id;
+
+//     const blog = await Blog.findOne({
+//       where: {
+//         id: blogId,
+//         userId, // ensure employee can only fetch their own blog
+//       },
+//       include: [
+//         {
+//           model: Category,
+//           as: 'category',
+//           attributes: ['id', 'name'],
+//         },
+//         {
+//           model: User,
+//           as: 'author',
+//           attributes: ['id', 'name', 'email'],
+//         },
+//         {
+//           model: Comment,
+//           as: 'comments',
+//           attributes: ['id', 'content', 'userId', 'blogId', 'parentId', 'createdAt'],
+//           include: [
+//             {
+//               model: User,
+//               as: 'author',
+//               attributes: ['id', 'name', 'email'],
+//             },
+//           ],
+//         },
+//       ],
+//     });
+
+//     if (!blog) {
+//       return response.notFound(res, "Blog not found or you are not authorized to view it.");
+//     }
+
+//     const APP_BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
+
+//     const blogData = blog.toJSON();
+//     blogData.thumbnailUrl = blog.thumbnail
+//       ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
+//       : null;
+
+//     return response.ok(res, 'Blog fetched successfully.', { blog: blogData });
+
+//   } catch (error) {
+//     console.error('Error fetching blog by ID:', error);
+//     return response.internalServerError(res, 'Failed to fetch blog.', {
+//       error: error.message,
+//     });
+//   }
+// };

@@ -4,7 +4,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
 const mediaUploadHandler = require("../middlewares/mediaUploadHandler")
 const checkRole = require("../middlewares/checkRole");
 
-const { createBlog, empPublishedBlogs, empDraftBlogs, updateEmployeeBlog, employeeStatus, empDeleteOwnBlog } = require("../controllers/employee.controller")
+const { createBlog,empGetBlogById, empPublishedBlogs, empDraftBlogs, updateEmployeeBlog, employeeStatus, empDeleteOwnBlog } = require("../controllers/employee.controller")
 
 
 
@@ -17,6 +17,8 @@ router.post(
     mediaUploadHandler,
     createBlog
   );
+  router.get('/blog/:id', authMiddleware, checkRole("employee"), empGetBlogById);
+
   
 
 

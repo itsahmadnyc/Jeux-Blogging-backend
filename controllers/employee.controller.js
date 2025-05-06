@@ -9,7 +9,6 @@ const APP_BASE_URL = process.env.BASE_URL;
 
 
 
-
 exports.createBlog = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -136,7 +135,16 @@ exports.empDraftBlogs = async (req, res) => {
       return response.notFound(res, "Draft blogs are not found..!")
     }
 
-    return response.ok(res, 'Draft blogs fetched successfully.', { blogs: draftBlogs });
+    const blogsWithUrl = draftBlogs.map(blog => {
+      const blogData = blog.toJSON();
+      blogData.thumbnailUrl = blog.thumbnail
+        ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
+        : null;
+      return blogData;
+    });
+
+
+    return response.ok(res, 'Draft blogs fetched successfully.', { blogs: blogsWithUrl });
 
   } catch (error) {
     console.error('Error fetching draft blogs:', error);
@@ -270,20 +278,4 @@ exports.empDeleteOwnBlog = async (req, res) => {
     return response.internalServerError(res, "Failed to delete the employee blog", { error: error.message });
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

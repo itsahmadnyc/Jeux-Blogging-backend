@@ -13,12 +13,15 @@ const { updateProfileImage, contactUs, userGetAllBlogs, likeOrDislikeBlog, addCo
 
 
 
-// // Admin Section Routes
-router.post('/add-employee', authMiddleware, checkAdmin, profileImage, addEmployee);
-router.get('/all-employees', authMiddleware, checkAdmin, getAllEmployees);
-router.delete('/delete-employee/:id', authMiddleware, checkAdmin, deleteEmployee);
-router.put('/update-employee/:id', authMiddleware, checkAdmin, profileImage, updateEmployee);
-router.get('/employee/:id', authMiddleware, checkAdmin, getEmployeeById);
+// Admin Section Routes
+router.post('/add-employee', authMiddleware,  profileImage, addEmployee);
+router.get('/all-employees', authMiddleware, getAllEmployees);
+router.delete('/delete-employee/:id', authMiddleware, deleteEmployee);
+router.put('/update-employee/:id', authMiddleware,  profileImage, updateEmployee);
+router.get('/employee/:id', authMiddleware,  getEmployeeById);
+
+
+
 
 
 router.get('/all-users', authMiddleware, checkAdmin, getAllUsers);

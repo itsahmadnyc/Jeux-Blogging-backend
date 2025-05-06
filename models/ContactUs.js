@@ -21,7 +21,7 @@ const { sequelize } = require("../config/database");
         allowNull: false,
       },
     },
-  {tableName: 'contactus', timestamps: 'true'} );
+  );
   
   
     module.exports = ContactUs;

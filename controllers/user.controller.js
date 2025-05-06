@@ -239,9 +239,12 @@ exports.deleteUser = async (req, res) => {
 
 exports.updateProfileImage = async (req, res) => {
   try {
-    const userId = req.user.id; // from token
+    const userId = req.user.id; 
 
-    console.log("userId", userId);
+    if(!userId){
+      return response.badRequest(res, "Token is missing or invalid");
+    }
+   
     if (!req.file) {
       return response.badRequest(res, "No image uploaded");
     }
@@ -269,7 +272,6 @@ exports.updateProfileImage = async (req, res) => {
     });
   }
 };
-
 
 
 exports.contactUs = async (req, res) => {

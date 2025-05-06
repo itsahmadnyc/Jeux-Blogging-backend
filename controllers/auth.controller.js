@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const response = require("../utils/responseHandler");
+const logger = require("../utils/logger")
 
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
@@ -51,35 +52,36 @@ exports.register = async (req, res) => {
 
 
 
+
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return response.badRequest(res, 'Email and Password are required..!')
+      logger.warn('Login attempt with missing credentials', { email });
+      return response.badRequest(res, 'Email and Password are required');
     }
 
     const user = await User.findOne({ where: { email } });
-    if (!user) return response.notFound(res, 'User not found');
-
-    console.log('isBlocked:', user.isBlocked, 'role:', user.role);
-
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return response.badRequest(res, 'Invalid credentials');
- 
-    if(user.isBlocked){
-
-      if(req.user.role !== 'admin'){
-        return response.unauthorized(res, "Access denied. Your account is blocked by Admin");
-      }
+    if (!user) {
+      logger.warn('Login failed: User not found', { email });
+      return response.notFound(res, 'User not found');
     }
 
+    if (user.isBlocked) {
+      logger.warn('Blocked user attempted to log in', { userId: user.id, eamil: user.email });
+      return response.unauthorized(res, 'Access denied. Your account has been blocked by Admin');
+    }
 
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      logger.warn('Login failed: Invalid password', { userId: user.id, email: user.email });
+      return response.badRequest(res, 'Invalid credentials');
+    }
 
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
 
-    await user.save();
+    logger.info('User logged in successfully', { userId: user.id, role: user.role });
 
     return response.ok(res, 'Login successful', {
       id: user.id,
@@ -89,10 +91,54 @@ exports.login = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error('Login Error:', error);
-    return response.internalServerError(res, 'Something went wrong during login', { error: error.message });
+    logger.error('Login error', { error: error.message, stack: error.stack });
+    return response.internalServerError(res, 'Something went wrong during login');
   }
 };
+
+
+
+// Below login is working fine without winston logger
+// exports.login = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     if (!email || !password) {
+//       return response.badRequest(res, 'Email and Password are required..!')
+//     }
+
+//     const user = await User.findOne({ where: { email } });
+//     if (!user) return response.notFound(res, 'User not found');
+
+
+//     if(user.isBlocked){
+
+//       if(req.user.role !== 'admin'){
+//         return response.unauthorized(res, "Access denied. Your account is blocked by Admin");
+//       }
+//     }
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) return response.badRequest(res, 'Invalid credentials');
+
+
+
+//     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+
+//     await user.save();
+
+//     return response.ok(res, 'Login successful', {
+//       id: user.id,
+//       name: user.name,
+//       email: user.email,
+//       role: user.role,
+//       token,
+//     });
+//   } catch (error) {
+//     console.error('Login Error:', error);
+//     return response.internalServerError(res, 'Something went wrong during login', { error: error.message });
+//   }
+// };
 
 
 
@@ -118,40 +164,4 @@ exports.getProfile = async (req, res) => {
 };
 
 
-
-
-
-
-
-
-
-// exports.login = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     if (!email || !password) {
-//       return response.badRequest(res, 'Email and Password are required..!')
-//     }
-
-//     const user = await User.findOne({ where: { email } });
-//     if (!user) return response.notFound(res, 'User not found');
-
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) return response.badRequest(res, 'Invalid credentials');
-
-//     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-//     await user.save();
-
-//     return response.ok(res, 'Login successful', {
-//       id: user.id,
-//       name: user.name,
-//       email: user.email,
-//       role: user.role,
-//       token,
-//     });
-//   } catch (error) {
-//     console.error('Login Error:', error);
-//     return response.internalServerError(res, 'Something went wrong during login', { error: error.message });
-//   }
-// };
 

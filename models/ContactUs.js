@@ -20,7 +20,8 @@ const { sequelize } = require("../config/database");
         type: DataTypes.STRING,
         allowNull: false,
       },
-    });
+    },
+  {tableName: 'contactus', timestamps: 'true'} );
   
   
     module.exports = ContactUs;

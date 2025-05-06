@@ -15,7 +15,8 @@ const UserVisit = sequelize.define("UserVisit", {
        type: DataTypes.DATE,
        defaultValue: DataTypes.NOW,   //SET AS DEFAULT CURRENT TIMESTAMP
        allowNull: false
-      }
+      },
+      
 })
 
 

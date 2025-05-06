@@ -2,6 +2,7 @@ const checkRole = (roles) => {
     return (req, res, next) => {
       // Assuming the user's role is saved in req.user (from JWT or session)
       const userRole = req.user?.role; 
+      console.log("User role in check role middleware :", req.user.role);
   
       if (!userRole) {
         return res.status(401).json({ message: "Unauthorized: No role found" });

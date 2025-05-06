@@ -6,6 +6,7 @@ module.exports = (sequelize) => {
     User.hasMany(Blog, {
         foreignKey: 'userId',
         as: 'blogs',
+        onDelete: 'CASCADE',
     });
     Blog.belongsTo(User, {
         foreignKey: 'userId',
@@ -16,8 +17,10 @@ module.exports = (sequelize) => {
     // User → Comments
     User.hasMany(Comment, {
         foreignKey: 'userId',
-        as: 'comments'
+        as: 'comments',
+        onDelete: 'CASCADE',
     });
+
     Comment.belongsTo(User, {
         foreignKey: 'userId',
         as: 'author'
@@ -27,7 +30,8 @@ module.exports = (sequelize) => {
     //User → Likes
     User.hasMany(Like, {
         foreignKey: 'userId',
-        as: 'likes'
+        as: 'likes',
+        onDelete: 'CASCADE',
     });
     Like.belongsTo(User, {
         foreignKey: 'userId',
@@ -64,8 +68,10 @@ module.exports = (sequelize) => {
     // User → Category
     User.hasMany(Category, {
         foreignKey: 'userId',
-        as: 'categories'
+        as: 'categories',
+        onDelete: 'CASCADE'
     });
+
     Category.belongsTo(User, {
         foreignKey: 'userId',
         as: 'creator'
@@ -85,7 +91,8 @@ module.exports = (sequelize) => {
     //MediaFiles → User
     MediaFiles.belongsTo(User, {
         foreignKey: "userId",
-        as: "user"
+        as: "user",
+        onDelete: 'CASCADE'
     });
 
 

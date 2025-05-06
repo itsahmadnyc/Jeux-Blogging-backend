@@ -166,9 +166,9 @@ exports.updateEmployeeBlog = async (req, res) => {
 };
 
 
-exports.employeeStats = async (req, res) => {
+exports.employeeStatus = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.user.id;
     if (!userId) {
       return response.notFound(res, 'Token is missing or invalid..!')
     }
@@ -247,7 +247,7 @@ exports.empDeleteOwnBlog = async (req, res) => {
     }
 
     const deletedBlog = await blog.destroy();
-    return response.ok(res, "Employee account has been deleted successfully..!", { deletedBlog });
+    return response.ok(res, "Employee has been deleted own blog successfully..!", { deletedBlog });
 
   } catch (error) {
     console.log('Error of delete blog');

@@ -11,7 +11,7 @@ const MediaFiles = sequelize.define('MediaFiles', {
         }
     },
     fileUrl: {type: DataTypes.STRING, allowNull: false },
-    originalname: {type: DataTypes.STRING},
+fileName: {type: DataTypes.STRING, allowNull: false}
 },
 {timestamps: true, tableName: "mediaFiles"}
 )

@@ -3,6 +3,9 @@ const Subscriber = require('../models/Subscriber');
 const notifyAllSubscribersAndUsers = require('../utils/notifyAllsubscriberfun');
 const response = require('../utils/responseHandler');
 const { Op } = require("sequelize");
+const APP_BASE_URL = process.env.BASE_URL;
+
+
 
 
 
@@ -19,7 +22,6 @@ exports.createBlog = async (req, res) => {
       publish = false,
     } = req.body;
 
-
     if (!title || !content || !categoryId) {
       return response.badRequest(res, 'Title, content, and categoryId are required.');
     }
@@ -27,6 +29,14 @@ exports.createBlog = async (req, res) => {
     const category = await Category.findByPk(categoryId);
     if (!category) {
       return response.badRequest(res, 'Invalid categoryId. Category not found.');
+    }
+
+    // Handle thumbnail upload
+    let thumbnail = null;
+    let thumbnailUrl = null;
+    if (req.file) {
+      thumbnail = req.file.filename;
+      thumbnailUrl = `${APP_BASE_URL}/uploads/${thumbnail}`;
     }
 
     const newBlog = await Blog.create({
@@ -37,15 +47,20 @@ exports.createBlog = async (req, res) => {
       userId,
       publish,
       tags,
+      thumbnail,
     });
-
 
     if (publish === true || publish === 1) {
       await notifyAllSubscribersAndUsers(newBlog.title);
     }
 
+    const blogData = {
+      ...newBlog.toJSON(),
+      thumbnailUrl,
+    };
+
     const message = publish ? 'Blog published successfully' : 'Blog saved as draft';
-    return response.created(res, message, { blog: newBlog });
+    return response.created(res, message, { blog: blogData });
 
   } catch (error) {
     console.error('Error creating blog:', error);
@@ -54,6 +69,7 @@ exports.createBlog = async (req, res) => {
     });
   }
 };
+
 
 
 
@@ -254,6 +270,17 @@ exports.empDeleteOwnBlog = async (req, res) => {
     return response.internalServerError(res, "Failed to delete the employee blog", { error: error.message });
   }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

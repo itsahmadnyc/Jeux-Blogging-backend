@@ -7,6 +7,10 @@ const Blog = sequelize.define('Blog', {
   blogAuthor: { type: DataTypes.STRING },
   content: { type: DataTypes.TEXT, allowNull: false },  
   publish: { type: DataTypes.BOOLEAN, defaultValue: false },
+  thumbnail: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   tags: {
     type: DataTypes.TEXT,
     allowNull: true,

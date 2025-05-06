@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/auth.middleware');
+const mediaUploadHandler = require("../middlewares/mediaUploadHandler")
 const checkRole = require("../middlewares/checkRole");
 
 const { createBlog, empPublishedBlogs, empDraftBlogs, updateEmployeeBlog, employeeStatus, empDeleteOwnBlog } = require("../controllers/employee.controller")
@@ -9,10 +10,20 @@ const { createBlog, empPublishedBlogs, empDraftBlogs, updateEmployeeBlog, employ
 
 
 
+router.post(
+    '/create-blog',
+    authMiddleware,
+    checkRole("employee"),
+    mediaUploadHandler,
+    createBlog
+  );
+  
+
+
 router.use(authMiddleware, checkRole("employee"));
 
 
-router.post('/create-blog',  createBlog);
+// router.post('/create-blog', mediaUploadHandler, createBlog);
 router.get('/publish-blogs', empPublishedBlogs);
 router.get('/draft-blogs', empDraftBlogs);
 router.get('/employee-status', employeeStatus);

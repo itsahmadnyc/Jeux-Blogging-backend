@@ -23,7 +23,6 @@ router.post(
 router.use(authMiddleware, checkRole("employee"));
 
 
-// router.post('/create-blog', mediaUploadHandler, createBlog);
 router.get('/publish-blogs', empPublishedBlogs);
 router.get('/draft-blogs', empDraftBlogs);
 router.get('/employee-status', employeeStatus);

@@ -49,6 +49,7 @@ exports.createBlog = async (req, res) => {
       thumbnail,
     });
 
+
     if (publish === true || publish === 1) {
       await notifyAllSubscribersAndUsers(newBlog.title);
     }
@@ -102,7 +103,16 @@ exports.empPublishedBlogs = async (req, res) => {
       return response.notFound(res, "No published Blogs Found")
     }
 
-    return response.ok(res, 'Published blogs fetched successfully.', { blogs: publishedBlogs });
+
+    const blogsWithUrl = publishedBlogs.map(blog =>{
+      const blogData = blog.toJSON();
+      blogData.thumbnailUrl = blog.thumbnail
+      ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
+      : null;
+      return blogData;
+    })
+
+    return response.ok(res, 'Published blogs fetched successfully.', { blogs: blogsWithUrl });
   } catch (error) {
     console.error('Error fetching published blogs:', error);
     return response.internalServerError(res, 'Failed to fetch published blogs.', { error: error.message });

@@ -22,8 +22,7 @@ router.get('/employee/:id', authMiddleware,  getEmployeeById);
 
 
 
-
-
+// Admin Routes for users
 router.get('/all-users', authMiddleware, checkAdmin, getAllUsers);
 router.delete('/delete-user/:id', authMiddleware, checkAdmin, deleteUser);
 router.get('/all-contacts', authMiddleware, getAllContactRequests);

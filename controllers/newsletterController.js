@@ -1,5 +1,6 @@
 // controllers/newsletterController.js
-const { User } = require("../models");
+const { Op } = require("sequelize");
+const { User, Blog, Category } = require("../models");
 const Subscriber = require("../models/Subscriber");
 const { sendEmail } = require("../services/emailService");
 const response = require("../utils/responseHandler");
@@ -9,7 +10,7 @@ exports.subscriber = async (req, res) => {
         const userId = req.user.id;
         const { email } = req.body;
 
-        if(!email){
+        if (!email) {
             return response.notFound(res, "Valid Email is required");
         }
 
@@ -34,4 +35,5 @@ exports.subscriber = async (req, res) => {
         return response.internalServerError(res, "Subscription failed");
     }
 };
+
 

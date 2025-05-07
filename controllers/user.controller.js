@@ -413,6 +413,7 @@ exports.likeOrDislikeBlog = async (req, res) => {
   }
 };
 
+
 exports.addCommentsOrReply = async (req, res) => {
   try {
     const { blogId } = req.params;
@@ -446,12 +447,23 @@ exports.addCommentsOrReply = async (req, res) => {
       parentId: parentId || null,
     });
 
+
+    // Convert comment instance to plain object to add extra info
+    const commentData = comment.toJSON();
+    commentData.isReply = parentId ? true : false; 
+
     return response.ok(res, "Comment is added successfully", comment);
   } catch (error) {
     console.error("Error in addCommentsOrReply:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+
+
+
+
 
 exports.userDeleteAccount = async (req, res) => {
   try {

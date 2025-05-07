@@ -66,7 +66,7 @@ exports.createBlog = async (req, res) => {
       thumbnailUrl,
     };
 
-    const message = publish ? 'Blog published successfully. Email send to all Users and Subscribers' : 'Blog saved as draft';
+    const message = publish ? 'Blog published successfully. ' : 'Blog saved as draft';
     return response.created(res, message, { blog: blogData });
 
   } catch (error) {
@@ -188,7 +188,7 @@ exports.updateEmployeeBlog = async (req, res) => {
     const publishFlag = publish === 'true' || publish === true || publish === 1 || publish === '1';
 
     console.log("Published Flag", publishFlag);
-    console.log("Parsed CategoryId", parsedCategoryId);
+    console.log("ParsedCategoryId is: ", parsedCategoryId);
 
    
     if (parsedCategoryId !== blog.categoryId) {
@@ -303,7 +303,6 @@ exports.empDeleteOwnBlog = async (req, res) => {
       return response.notFound(res, "Token is missing or invalid..!")
     }
 
-
     const blog = await Blog.findOne({
       where: {
         id: blogId,
@@ -329,6 +328,10 @@ exports.empGetBlogById = async (req, res) => {
   try {
     const blogId = req.params.id;
     const userId = req.user.id;
+
+    if(!userId){
+      return response.notFound(res, "Token is missing or inValid");
+    }
 
     const blog = await Blog.findOne({
       where: {

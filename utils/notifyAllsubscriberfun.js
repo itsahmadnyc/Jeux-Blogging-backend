@@ -6,7 +6,6 @@ const notifyAllSubscribersAndUsers = async (blogTitle) => {
     const subscribers = await Subscriber.findAll();
     const users = await User.findAll({ where: { role: 'user' } });
 
-    console.log("Subscriber and User", subscribers,users )
   
     const allEmails = [
       ...new Set([
@@ -15,7 +14,7 @@ const notifyAllSubscribersAndUsers = async (blogTitle) => {
       ])
     ];
   
-    console.log("Sending emails for blog:", blogTitle);
+    console.log("Sending emails to all Users and Subscribers:");
 
 
     const subject = `New Blog Published: ${blogTitle}`;

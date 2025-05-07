@@ -304,7 +304,7 @@ Submitted via Jeux developers Platform.
     `;
     await sendEmail(email, subject, text);
 
-    return response.created(res, 'Contact request submitted successfully!', contact);
+    return response.created(res, 'Contact request submitted successfully !', contact);
   } catch (error) {
     console.error('Contact Us Error:', error);
     return response.internalServerError(res, 'Something went wrong.', { error: error.message });

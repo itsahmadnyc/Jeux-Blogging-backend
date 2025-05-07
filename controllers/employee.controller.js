@@ -1,7 +1,7 @@
 const { User, Blog, Category, Comment, Like } = require('../models');
 const Subscriber = require('../models/Subscriber');
 const { buildCommentTree } = require('../utils/buildCommentTree');
-const notifyAllSubscribersAndUsers = require("../utils/notifyAllsubscriberfun.js") 
+const notifyAllSubscribersAndUsers = require("../utils/notifyAllsubscriberfun.js")
 const response = require('../utils/responseHandler');
 const { Op } = require("sequelize");
 const APP_BASE_URL = process.env.BASE_URL;
@@ -50,14 +50,13 @@ exports.createBlog = async (req, res) => {
       thumbnail,
     });
 
- 
+
     const publishFlag = publish === 'true' || publish === true || publish === 1 || publish === '1';
+    if (publishFlag) {
+      await notifyAllSubscribersAndUsers(newBlog.title);
+    }
 
-if (publishFlag) {
-  await notifyAllSubscribersAndUsers(newBlog.title);
-}
 
- 
     // if (publish === true || publish === 1) {
     //   await notifyAllSubscribersAndUsers(newBlog.title);
     // }
@@ -67,7 +66,7 @@ if (publishFlag) {
       thumbnailUrl,
     };
 
-    const message = publish ? 'Blog published successfully' : 'Blog saved as draft';
+    const message = publish ? 'Blog published successfully. Email send to all Users and Subscribers' : 'Blog saved as draft';
     return response.created(res, message, { blog: blogData });
 
   } catch (error) {
@@ -107,7 +106,6 @@ exports.empPublishedBlogs = async (req, res) => {
     if (!publishedBlogs) {
       return response.notFound(res, "No published Blogs Found")
     }
-
 
     const blogsWithUrl = publishedBlogs.map(blog => {
       const blogData = blog.toJSON();
@@ -157,7 +155,6 @@ exports.empDraftBlogs = async (req, res) => {
       return blogData;
     });
 
-
     return response.ok(res, 'Draft blogs fetched successfully.', { blogs: blogsWithUrl });
 
   } catch (error) {
@@ -171,7 +168,15 @@ exports.updateEmployeeBlog = async (req, res) => {
   try {
     const blogId = req.params.id;
     const userId = req.user.id;
-    const { title, content, categoryId, publish, tags } = req.body;
+    const {
+      title,
+      blogAuthor,
+      content,
+      categoryId,
+      tags,
+      publish,
+    } = req.body;
+    console.log("title, content, categoryId, publish,tags", title, content,categoryId,publish, tags);
 
     const blog = await Blog.findOne({ where: { id: blogId, userId } });
 
@@ -186,16 +191,30 @@ exports.updateEmployeeBlog = async (req, res) => {
       }
     }
 
+    let thumbnail = blog.thumbnail;
+    if(req.file){
+      thumbnail = req.file.filename;
+    }
+
 
     await blog.update({
       title: title || blog.title,
+      blogAuthor: blogAuthor || req.user.name,
       content: content || blog.content,
       categoryId: categoryId || blog.categoryId,
-      publish: typeof publish === 'boolean' ? publish : blog.publish,
+      publish,
       tags: tags || blog.tags,
+      thumbnail
     });
 
-    return response.ok(res, 'Blog updated successfully.', { blog });
+    await blog.reload();
+
+    const blogData = blog.toJSON();
+    blogData.thumbnailUrl = thumbnail 
+    ? `${APP_BASE_URL}/uploads/${thumbnail}`
+    :null;
+
+    return response.ok(res, 'Blog updated successfully.', { blog: blogData });
 
   } catch (error) {
     console.error('Error updating blog:', error);
@@ -223,8 +242,6 @@ exports.employeeStatus = async (req, res) => {
 
     const blogIds = blogs.map(blog => blog.id);
 
-
-
     const totalComments = await Comment.count({
       where: { blogId: { [Op.in]: blogIds } },
     });
@@ -236,7 +253,6 @@ exports.employeeStatus = async (req, res) => {
         type: 'like',
       },
     });
-
 
     const dislikeCount = await Like.count({
       where: {
@@ -323,7 +339,6 @@ exports.empGetBlogById = async (req, res) => {
       return response.notFound(res, "Blog not found or you're not authorized to view it.");
     }
 
-
     const comments = await Comment.findAll({
       where: { blogId },
       include: [
@@ -337,6 +352,8 @@ exports.empGetBlogById = async (req, res) => {
     });
 
     const nestedComments = buildCommentTree(comments);
+
+    console.log("Nested comments are:", nestedComments);
 
     const totalComments = comments.length;
 

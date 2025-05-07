@@ -9,6 +9,10 @@ exports.subscriber = async (req, res) => {
         const userId = req.user.id;
         const { email } = req.body;
 
+        if(!email){
+            return response.notFound(res, "Valid Email is required");
+        }
+
         if (!userId) {
             return response.notFound(res, "Token is missing or invalid");
         }
@@ -18,7 +22,6 @@ exports.subscriber = async (req, res) => {
         if (!created) {
             return response.badRequest(res, "Already subscribed");
         }
-
         await sendEmail(
             email,
             "Thanks for Subscribing to Jeux developers Newsletter!",

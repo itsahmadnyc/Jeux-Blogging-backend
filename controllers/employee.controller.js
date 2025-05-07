@@ -188,6 +188,7 @@ exports.updateEmployeeBlog = async (req, res) => {
     const publishFlag = publish === 'true' || publish === true || publish === 1 || publish === '1';
 
     console.log("Published Flag", publishFlag);
+    console.log("Parsed CategoryId", parsedCategoryId);
 
    
     if (parsedCategoryId !== blog.categoryId) {
@@ -203,7 +204,7 @@ exports.updateEmployeeBlog = async (req, res) => {
       thumbnail = req.file.filename;
     }
 
-    // Check if we're changing from unpublished to published
+    // CHECK CHANGE, TO UNPUBLISHED TO PUBLISHED
     const wasUnpublished = blog.publish === false;
     const isNowPublished = publishFlag === true;
 
@@ -218,7 +219,7 @@ exports.updateEmployeeBlog = async (req, res) => {
       thumbnail,
     });
 
-    // Send notification only if blog is newly published
+    // SEND NOTIFICATION IF BLOG IS NEWELY PUBLISHED
     if (wasUnpublished && isNowPublished) {
       await notifyAllSubscribersAndUsers(blog.title);
     }
@@ -227,7 +228,7 @@ exports.updateEmployeeBlog = async (req, res) => {
     const blogData = blog.toJSON();
     blogData.thumbnailUrl = thumbnail ? `${APP_BASE_URL}/uploads/${thumbnail}` : null;
 
-    return response.ok(res, 'Blog updated successfully.', { blog: blogData });
+    return response.ok(res, 'Blog updated successfully. On new publish blog notification send to Users and Subscribers', { blog: blogData });
 
   } catch (error) {
     console.error('Error updating blog:', error);
@@ -322,7 +323,6 @@ exports.empDeleteOwnBlog = async (req, res) => {
     return response.internalServerError(res, "Failed to delete the employee blog", { error: error.message });
   }
 }
-
 
 
 exports.empGetBlogById = async (req, res) => {

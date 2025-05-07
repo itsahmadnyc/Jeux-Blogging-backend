@@ -176,7 +176,6 @@ exports.updateEmployeeBlog = async (req, res) => {
       tags,
       publish,
     } = req.body;
-    console.log("title, content, categoryId, publish,tags", title, content,categoryId,publish, tags);
 
     const blog = await Blog.findOne({ where: { id: blogId, userId } });
 
@@ -184,35 +183,49 @@ exports.updateEmployeeBlog = async (req, res) => {
       return response.notFound(res, 'Blog not found or not authorized to update.');
     }
 
-    if (categoryId) {
-      const category = await Category.findByPk(categoryId);
+    // PARSE AND VALIDATE INPUTS
+    const parsedCategoryId = categoryId ? parseInt(categoryId) : blog.categoryId;
+    const publishFlag = publish === 'true' || publish === true || publish === 1 || publish === '1';
+
+    console.log("Published Flag", publishFlag);
+
+   
+    if (parsedCategoryId !== blog.categoryId) {
+      const category = await Category.findByPk(parsedCategoryId);
       if (!category) {
         return response.badRequest(res, 'Invalid categoryId. Category not found.');
       }
     }
 
+    
     let thumbnail = blog.thumbnail;
-    if(req.file){
+    if (req.file) {
       thumbnail = req.file.filename;
     }
 
+    // Check if we're changing from unpublished to published
+    const wasUnpublished = blog.publish === false;
+    const isNowPublished = publishFlag === true;
 
+    
     await blog.update({
       title: title || blog.title,
-      blogAuthor: blogAuthor || req.user.name,
+      blogAuthor: blogAuthor || blog.blogAuthor,
       content: content || blog.content,
-      categoryId: categoryId || blog.categoryId,
-      publish,
+      categoryId: parsedCategoryId,
+      publish: publishFlag,
       tags: tags || blog.tags,
-      thumbnail
+      thumbnail,
     });
 
-    await blog.reload();
+    // Send notification only if blog is newly published
+    if (wasUnpublished && isNowPublished) {
+      await notifyAllSubscribersAndUsers(blog.title);
+    }
 
+    
     const blogData = blog.toJSON();
-    blogData.thumbnailUrl = thumbnail 
-    ? `${APP_BASE_URL}/uploads/${thumbnail}`
-    :null;
+    blogData.thumbnailUrl = thumbnail ? `${APP_BASE_URL}/uploads/${thumbnail}` : null;
 
     return response.ok(res, 'Blog updated successfully.', { blog: blogData });
 
@@ -221,6 +234,7 @@ exports.updateEmployeeBlog = async (req, res) => {
     return response.internalServerError(res, 'Failed to update blog.', { error: error.message });
   }
 };
+
 
 
 exports.employeeStatus = async (req, res) => {

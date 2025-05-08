@@ -312,7 +312,7 @@ exports.empDeleteOwnBlog = async (req, res) => {
     }
 
     const deletedBlog = await blog.destroy();
-    return response.ok(res, "Employee has been deleted own blog successfully..!", { deletedBlog });
+    return response.ok(res, "Employee has deleted own blog successfully..!", { deletedBlog });
 
   } catch (error) {
     console.log('Error of delete blog');
@@ -329,6 +329,7 @@ exports.empGetBlogById = async (req, res) => {
     if(!userId){
       return response.notFound(res, "Token is missing or inValid");
     }
+  
 
     const blog = await Blog.findOne({
       where: {
@@ -378,6 +379,7 @@ exports.empGetBlogById = async (req, res) => {
       : null;
     blogData.totalComments = totalComments;
     blogData.comments = nestedComments;
+
 
     return response.ok(res, 'Blog fetched successfully.', { blog: blogData });
 

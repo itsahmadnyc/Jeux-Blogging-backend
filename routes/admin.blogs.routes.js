@@ -9,7 +9,7 @@ const checkAdmin = require('../middlewares/admin/checkAdmin');
 
 
 
-router.get('/all-blogs', authMiddleware, checkAdmin,  adminReadAllBlogs);
+router.get('/all-blogs', authMiddleware, adminReadAllBlogs);
 router.get('/comments/:blogId', authMiddleware, checkAdmin, getCommentsByBlog);
 router.delete('/delete/:blogId', authMiddleware, checkAdmin, deleteBlogComments);
 

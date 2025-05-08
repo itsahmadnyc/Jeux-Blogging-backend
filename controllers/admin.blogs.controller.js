@@ -4,6 +4,7 @@ const response = require('../utils/responseHandler');
 exports.adminReadAllBlogs = async (req, res) => {
     try {
         const blogs = await Blog.findAll({
+            where: { publish: true },
             include: [
                 {
                     model: User,

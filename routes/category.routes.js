@@ -9,7 +9,7 @@ const checkAdmin = require('../middlewares/admin/checkAdmin');
 
 
 
-router.post('/add-category', authMiddleware, addCategory);
+router.post('/add-category', authMiddleware, checkAdmin, addCategory);
 router.get('/all-categories', authMiddleware, getAllCategories);
 router.put('/update-category/:id', authMiddleware, checkAdmin, updateCategory);
 router.delete('/delete-category/:id', authMiddleware, checkAdmin, deleteCategory);

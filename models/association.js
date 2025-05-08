@@ -64,7 +64,7 @@ module.exports = (sequelize) => {
         foreignKey: 'blogId',
         as: 'blog',
         onDelete: 'CASCADE',
-        // constraints: false,
+        // constraints: false, 
     });
 
     // User → Category

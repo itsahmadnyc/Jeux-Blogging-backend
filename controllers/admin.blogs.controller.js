@@ -1,6 +1,8 @@
 const { Blog, User, Category, Like, Comment } = require('../models');
 const response = require('../utils/responseHandler');
 
+const APP_BASE_URL = process.env.BASE_URL;
+
 exports.adminReadAllBlogs = async (req, res) => {
     try {
         const blogs = await Blog.findAll({
@@ -20,16 +22,26 @@ exports.adminReadAllBlogs = async (req, res) => {
             order: [['createdAt', 'DESC']],
         });
 
-        const formattedBlogs = blogs.map(blog => ({
-            id: blog.id,
-            title: blog.title,
-            content: blog.content,
-            publish: blog.publish,
-            createdAt: blog.createdAt,
-            updatedAt: blog.updatedAt,
-            author: blog.author,
-            category: blog.category,
-        }));
+
+
+      const formattedBlogs = blogs.map(blog => {
+      const blogData = blog.toJSON(); 
+      const thumbnailUrl = blogData.thumbnail
+        ? `${APP_BASE_URL}/uploads/${blogData.thumbnail}` 
+        : null;
+
+        return {
+            id: blogData.id,
+            title: blogData.title,
+            content: blogData.content,
+            publish: blogData.publish,
+            createdAt: blogData.createdAt,
+            updatedAt: blogData.updatedAt,
+            author: blogData.author,       
+            category: blogData.category,   
+            thumbnailUrl: thumbnailUrl     
+          };
+        });
 
         return response.ok(res, 'All blogs fetched successfully', { blogs: formattedBlogs });
     } catch (error) {

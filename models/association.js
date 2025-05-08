@@ -54,7 +54,7 @@ module.exports = (sequelize) => {
     Blog.hasMany(Comment, {
         foreignKey: 'blogId',
         as: 'comments',
-        constraints: false,
+        // constraints: false,
         onDelete: 'CASCADE',
     },
     );
@@ -64,7 +64,7 @@ module.exports = (sequelize) => {
         foreignKey: 'blogId',
         as: 'blog',
         onDelete: 'CASCADE',
-        constraints: false,
+        // constraints: false,
     });
 
     // User → Category

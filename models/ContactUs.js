@@ -21,6 +21,10 @@ const { sequelize } = require("../config/database");
         allowNull: false,
       },
     },
+    {
+      timestamps: true,
+      tableName: 'contactUs', // change this to whatever table name you want
+    }
   );
   
   

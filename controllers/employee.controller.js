@@ -187,9 +187,6 @@ exports.updateEmployeeBlog = async (req, res) => {
     const parsedCategoryId = categoryId ? parseInt(categoryId) : blog.categoryId;
     const publishFlag = publish === 'true' || publish === true || publish === 1 || publish === '1';
 
-    console.log("Published Flag", publishFlag);
-    console.log("ParsedCategoryId is: ", parsedCategoryId);
-
    
     if (parsedCategoryId !== blog.categoryId) {
       const category = await Category.findByPk(parsedCategoryId);

@@ -55,6 +55,7 @@ module.exports = (sequelize) => {
         foreignKey: 'blogId',
         as: 'comments',
         constraints: false,
+        onDelete: 'CASCADE',
     },
     );
 
@@ -62,6 +63,7 @@ module.exports = (sequelize) => {
     Comment.belongsTo(Blog, {
         foreignKey: 'blogId',
         as: 'blog',
+        onDelete: 'CASCADE',
         constraints: false,
     });
 

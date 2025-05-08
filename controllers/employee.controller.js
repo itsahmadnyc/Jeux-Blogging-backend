@@ -187,7 +187,7 @@ exports.updateEmployeeBlog = async (req, res) => {
     const parsedCategoryId = categoryId ? parseInt(categoryId) : blog.categoryId;
     const publishFlag = publish === 'true' || publish === true || publish === 1 || publish === '1';
 
-   
+
     if (parsedCategoryId !== blog.categoryId) {
       const category = await Category.findByPk(parsedCategoryId);
       if (!category) {
@@ -195,7 +195,7 @@ exports.updateEmployeeBlog = async (req, res) => {
       }
     }
 
-    
+
     let thumbnail = blog.thumbnail;
     if (req.file) {
       thumbnail = req.file.filename;
@@ -205,7 +205,7 @@ exports.updateEmployeeBlog = async (req, res) => {
     const wasUnpublished = blog.publish === false;
     const isNowPublished = publishFlag === true;
 
-    
+
     await blog.update({
       title: title || blog.title,
       blogAuthor: blogAuthor || blog.blogAuthor,
@@ -221,7 +221,7 @@ exports.updateEmployeeBlog = async (req, res) => {
       await notifyAllSubscribersAndUsers(blog.title);
     }
 
-    
+
     const blogData = blog.toJSON();
     blogData.thumbnailUrl = thumbnail ? `${APP_BASE_URL}/uploads/${thumbnail}` : null;
 
@@ -326,10 +326,10 @@ exports.empGetBlogById = async (req, res) => {
     const blogId = req.params.id;
     const userId = req.user.id;
 
-    if(!userId){
+    if (!userId) {
       return response.notFound(res, "Token is missing or inValid");
     }
-  
+
 
     const blog = await Blog.findOne({
       where: {
@@ -390,6 +390,94 @@ exports.empGetBlogById = async (req, res) => {
     });
   }
 };
+
+
+
+
+exports.getEmpByIdWithDetails = async (req, res) => {
+  try {
+    const id = req.user.id;
+
+    // 1. Find the employee by ID and role
+    const employee = await User.findOne({
+      where: { id },
+      attributes: ['id', 'name', 'email', 'profileImage', 'createdAt'],
+    });
+
+    if (!employee) {
+      return response.notFound(res, 'Employee not found');
+    }
+
+
+    const blogs = await Blog.findAll({
+      where: { userId: id },
+      attributes: ['id', 'title', 'content', 'thumbnail', 'publish', 'createdAt', 'updatedAt'],
+      include: [
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'name'],
+        }
+      ]
+    });
+
+    const blogIds = blogs.map(blog => blog.id);
+
+
+    const totalBlogs = blogs.length;
+
+
+    const totalPublishedBlogs = blogs.filter(blog => blog.publish === true).length;
+    // const totalDraftBlogs = blogs.filter(blog => blog.publish === false).length;
+
+
+    const comments = await Comment.findAll({
+      where: { blogId: blogIds.length > 0 ? blogIds : null },
+      attributes: ['id'],
+    });
+
+    const totalComments = comments.length;
+
+
+    const likes = await Like.findAll({
+      where: { blogId: blogIds.length > 0 ? blogIds : null },
+      attributes: ['type'],
+    });
+
+    const totalLikeComments = likes.filter(like => like.type === 'like').length;
+    const totalUnLikeComments = likes.filter(like => like.type === 'dislike').length;
+
+
+
+    const formattedBlogs = blogs.map(blog => ({
+      ...blog.toJSON(), // convert Sequelize instance to plain object
+      thumbnail: blog.thumbnail ? `${APP_BASE_URL}/${blog.thumbnail}` : null
+    }));
+
+    return response.ok(res, 'Employee details fetched successfully', {
+      employee,
+      totalBlogs,
+      totalPublishedBlogs,
+      // totalDraftBlogs,
+      totalComments,
+      totalLikeComments,
+      totalUnLikeComments,
+      blogs: formattedBlogs,
+    });
+
+  } catch (error) {
+    console.error('Error fetching employee by ID:', error);
+    return response.internalServerError(res, 'Failed to fetch employee details', {
+      error: error.message,
+    });
+  }
+};
+
 
 
 

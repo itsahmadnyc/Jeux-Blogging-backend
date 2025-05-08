@@ -4,7 +4,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
 const mediaUploadHandler = require("../middlewares/mediaUploadHandler")
 const checkRole = require("../middlewares/checkRole");
 
-const { createBlog, empGetBlogById, getEmpByIdWithDetails, empPublishedBlogs, empDraftBlogs, employeeStatus, updateEmployeeBlog, empDeleteOwnBlog } = require("../controllers/employee.controller");
+const { createBlog, empGetBlogById, empPublishedBlogs, empDraftBlogs, employeeStatus, updateEmployeeBlog, empDeleteOwnBlog } = require("../controllers/employee.controller");
 const { authPlugins } = require('mysql2');
 
 
@@ -16,7 +16,7 @@ const { authPlugins } = require('mysql2');
 router.post('/create-blog', authMiddleware, checkRole("employee"), mediaUploadHandler, createBlog);
 router.put('/update-blog/:id', authMiddleware, mediaUploadHandler, updateEmployeeBlog);
 
-router.get('/employee/:id', authMiddleware, getEmpByIdWithDetails);
+// router.get('/employee/:id', authMiddleware, getEmpByIdWithDetails);
 
 
 router.get('/blog/:id',authMiddleware, empGetBlogById);

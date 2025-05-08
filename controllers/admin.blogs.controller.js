@@ -1,7 +1,11 @@
 const { Blog, User, Category, Like, Comment } = require('../models');
 const response = require('../utils/responseHandler');
+const { buildCommentTree } = require('../utils/buildCommentTree'); // Make sure this utility exists
+
 
 const APP_BASE_URL = process.env.BASE_URL;
+
+
 
 exports.adminReadAllBlogs = async (req, res) => {
     try {
@@ -118,3 +122,69 @@ return response.ok(res, `Deleted comments of blog Id of${blogId}`)
         return response.internalServerError(res, "Failed to delete Blog Comments", { error: error.message })
     }
 }
+
+
+
+
+
+exports.globalGetBlogById = async (req, res) => {
+  try {
+    const blogId = req.params.id;
+    const userId = req.user.id;
+
+    if (!userId) {
+      return response.notFound(res, "Token is missing or invalid");
+    }
+
+    const blog = await Blog.findOne({
+      where: { id: blogId },
+      include: [
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'name', 'email'],
+        },
+      ],
+    });
+
+    if (!blog) {
+      return response.notFound(res, "Blog not found.");
+    }
+
+    const comments = await Comment.findAll({
+      where: { blogId },
+      include: [
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'name', 'email'],
+        },
+      ],
+      order: [['createdAt', 'ASC']],
+    });
+
+    const nestedComments = buildCommentTree(comments);
+    const totalComments = comments.length;
+
+    const blogData = blog.toJSON();
+    blogData.thumbnailUrl = blog.thumbnail
+      ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
+      : null;
+    blogData.totalComments = totalComments;
+    blogData.comments = nestedComments;
+
+    return response.ok(res, 'Blog fetched successfully.', { blog: blogData });
+
+  } catch (error) {
+    console.error('Error fetching blog by ID:', error);
+    return response.internalServerError(res, 'Failed to fetch blog.', {
+      error: error.message,
+    });
+  }
+};
+

@@ -8,133 +8,128 @@ const APP_BASE_URL = process.env.BASE_URL;
 
 
 exports.adminReadAllBlogs = async (req, res) => {
-    try {
-        const blogs = await Blog.findAll({
-            where: { publish: true },
-            include: [
-                {
-                    model: User,
-                    as: 'author',
-                    attributes: ['id', 'name', 'email'],
-                },
-                {
-                    model: Category,
-                    as: 'category',
-                    attributes: ['id', 'name'],
-                }
-            ],
-            order: [['createdAt', 'DESC']],
-        });
+  try {
+    const blogs = await Blog.findAll({
+      where: { publish: true },
+      include: [
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'name', 'email'],
+        },
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['id', 'name'],
+        }
+      ],
+      order: [['createdAt', 'DESC']],
+    });
 
 
 
-      const formattedBlogs = blogs.map(blog => {
-      const blogData = blog.toJSON(); 
+    const formattedBlogs = blogs.map(blog => {
+      const blogData = blog.toJSON();
       const thumbnailUrl = blogData.thumbnail
-        ? `${APP_BASE_URL}/uploads/${blogData.thumbnail}` 
+        ? `${APP_BASE_URL}/uploads/${blogData.thumbnail}`
         : null;
 
-        return {
-            id: blogData.id,
-            title: blogData.title,
-            content: blogData.content,
-            publish: blogData.publish,
-            createdAt: blogData.createdAt,
-            updatedAt: blogData.updatedAt,
-            author: blogData.author,       
-            category: blogData.category,   
-            thumbnailUrl: thumbnailUrl     
-          };
-        });
+      return {
+        id: blogData.id,
+        title: blogData.title,
+        content: blogData.content,
+        publish: blogData.publish,
+        createdAt: blogData.createdAt,
+        updatedAt: blogData.updatedAt,
+        author: blogData.author,
+        category: blogData.category,
+        thumbnailUrl: thumbnailUrl
+      };
+    });
 
-        return response.ok(res, 'All blogs fetched successfully', { blogs: formattedBlogs });
-    } catch (error) {
-        console.error('Error fetching blogs:', error);
-        return response.internalServerError(res, 'Failed to fetch blogs', { error: error.message });
-    }
+    return response.ok(res, 'All blogs fetched successfully', { blogs: formattedBlogs });
+  } catch (error) {
+    console.error('Error fetching blogs:', error);
+    return response.internalServerError(res, 'Failed to fetch blogs', { error: error.message });
+  }
 };
 
 
 
 exports.getCommentsByBlog = async (req, res) => {
-    try {
+  try {
 
-        const userId = req.user.id;
-        if (!userId) {
-            return response.notFound(res, "Token is missing or invalid")
-        }
-        const { blogId } = req.params;
-        if (!blogId) {
-            return response.badRequest(res, "BlogId is required..!")
-        }
-
-        const comments = await Comment.findAll({
-            where: {
-                blogId,
-                parentId: null,
-            },
-            include: [
-                {
-                    model: User,
-                    as: 'author',
-                    attributes: ['id', 'name', 'email'],
-                },
-                {
-                    model: Comment,
-                    as: 'replies',
-                    include: [
-                        {
-                            model: User,
-                            as: 'author',
-                            attributes: ['id', 'name', 'email'],
-                        },
-                    ],
-                },
-            ],
-            order: [['createdAt', 'DESC']],
-        });
-
-        return response.ok(res, "Comments with replies fetched successfully", { comments })
-    } catch (error) {
-        console.error("Error to get comments");
-        return response.internalServerError(res, "Failed to get blog comments..!", { error: error.message })
+    const userId = req.user.id;
+    if (!userId) {
+      return response.notFound(res, "Token is missing or invalid")
     }
+    const { blogId } = req.params;
+    if (!blogId) {
+      return response.badRequest(res, "BlogId is required..!")
+    }
+
+    const comments = await Comment.findAll({
+      where: {
+        blogId,
+        parentId: null,
+      },
+      include: [
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'name', 'email'],
+        },
+        {
+          model: Comment,
+          as: 'replies',
+          include: [
+            {
+              model: User,
+              as: 'author',
+              attributes: ['id', 'name', 'email'],
+            },
+          ],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+    });
+
+    return response.ok(res, "Comments with replies fetched successfully", { comments })
+  } catch (error) {
+    console.error("Error to get comments");
+    return response.internalServerError(res, "Failed to get blog comments..!", { error: error.message })
+  }
 }
 
 
 
 exports.deleteBlogComments = async (req, res) => {
-    try {
-        const {blogId} = req.params;
-        const userId = req.user.id;
-if(!blogId){
-    return response.badRequest(res, "BlogId is required ..")
-}
-if(!userId){
-    return response.notFound(res, "Token is missing or invalid")
-}
-
-const deleted = await Comment.destroy({where: {blogId}});
-
-return response.ok(res, `Deleted comments of blog Id of${blogId}`)
-    } catch (error) {
-        console.error("Error to delete blog comment");
-        return response.internalServerError(res, "Failed to delete Blog Comments", { error: error.message })
+  try {
+    const { blogId } = req.params;
+    const userId = req.user.id;
+    if (!blogId) {
+      return response.badRequest(res, "BlogId is required ..")
     }
+    if (!userId) {
+      return response.notFound(res, "Token is missing or invalid")
+    }
+
+    const deleted = await Comment.destroy({ where: { blogId } });
+
+    return response.ok(res, `Deleted comments of blog Id of${blogId}`)
+  } catch (error) {
+    console.error("Error to delete blog comment");
+    return response.internalServerError(res, "Failed to delete Blog Comments", { error: error.message })
+  }
 }
 
 
 
 
 
-exports.globalGetBlogById = async (req, res) => {
+exports.globalBlogDetailsById = async (req, res) => {
   try {
     const blogId = req.params.id;
-    const userId = req.user.id;
-
-    if (!userId) {
-      return response.notFound(res, "Token is missing or invalid");
-    }
 
     const blog = await Blog.findOne({
       where: { id: blogId },
@@ -149,6 +144,11 @@ exports.globalGetBlogById = async (req, res) => {
           as: 'author',
           attributes: ['id', 'name', 'email'],
         },
+        {
+          model: Like,
+          as: 'likes',
+          attributes: ['type']
+        }
       ],
     });
 
@@ -172,6 +172,12 @@ exports.globalGetBlogById = async (req, res) => {
     const totalComments = comments.length;
 
     const blogData = blog.toJSON();
+
+    // Calculate likes and dislikes
+    const blogLikes = blogData.likes || [];
+    blogData.totalLikes = blogLikes.filter(like => like.type === 'like').length;
+    blogData.totalDislikes = blogLikes.filter(like => like.type === 'dislike').length;
+
     blogData.thumbnailUrl = blog.thumbnail
       ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
       : null;

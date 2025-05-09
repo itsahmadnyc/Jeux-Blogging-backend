@@ -1,13 +1,14 @@
 const { Blog, User, Category, Like, Comment } = require('../models');
 const response = require('../utils/responseHandler');
-const { buildCommentTree } = require('../utils/buildCommentTree'); // Make sure this utility exists
+const { sequelize } = require("../config/database");
 
+const { buildCommentTree } = require('../utils/buildCommentTree'); // Make sure this utility exists
 
 const APP_BASE_URL = process.env.BASE_URL;
 
 
 
-exports.adminReadAllBlogs = async (req, res) => {
+exports.globalReadAllBlogs = async (req, res) => {
   try {
     const blogs = await Blog.findAll({
       where: { publish: true },
@@ -15,7 +16,7 @@ exports.adminReadAllBlogs = async (req, res) => {
         {
           model: User,
           as: 'author',
-          attributes: ['id', 'name', 'email'],
+          attributes: ['id', 'name', 'email', 'profileImage'],
         },
         {
           model: Category,
@@ -125,8 +126,6 @@ exports.deleteBlogComments = async (req, res) => {
 
 
 
-
-
 exports.globalBlogDetailsById = async (req, res) => {
   try {
     const blogId = req.params.id;
@@ -142,7 +141,7 @@ exports.globalBlogDetailsById = async (req, res) => {
         {
           model: User,
           as: 'author',
-          attributes: ['id', 'name', 'email'],
+          attributes: ['id', 'name', 'email', 'profileImage'],
         },
         {
           model: Like,
@@ -184,6 +183,13 @@ exports.globalBlogDetailsById = async (req, res) => {
     blogData.totalComments = totalComments;
     blogData.comments = nestedComments;
 
+    // Count total blog of author
+    const authorId = blogData.author?.id;
+    if(authorId){
+      const authorBlogCount = await Blog.count({where: { userId: authorId,   publish: true } });
+      blogData.author.totalBlogs = authorBlogCount;
+    }
+
     return response.ok(res, 'Blog fetched successfully.', { blog: blogData });
 
   } catch (error) {
@@ -193,4 +199,174 @@ exports.globalBlogDetailsById = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+exports.getTop5EngagedBlogs = async (req, res) => {
+  try {
+    const blogs = await Blog.findAll({
+      attributes: {
+        include: [
+          // Total comments
+          [Sequelize.literal(`(
+            SELECT COUNT(*) FROM comments WHERE comments.blogId = Blog.id
+          )`), 'commentCount'],
+          // Total likes
+          [Sequelize.literal(`(
+            SELECT COUNT(*) FROM likes WHERE likes.blogId = Blog.id AND likes.type = 'like'
+          )`), 'likeCount']
+        ]
+      },
+      include: [
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'name', 'email']
+        },
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['id', 'name']
+        }
+      ],
+      order: [
+        [sequelize.literal('commentCount + likeCount'), 'DESC']
+      ],
+      limit: 5
+    });
+
+    const formatted = blogs.map(blog => ({
+      id: blog.id,
+      title: blog.title,
+      content: blog.content,
+      publish: blog.publish,
+      thumbnail: blog.thumbnail ? `${APP_BASE_URL}/${blog.thumbnail}` : null,
+      commentCount: blog.get('commentCount'),
+      likeCount: blog.get('likeCount'),
+      author: blog.author,
+      category: blog.category,
+      createdAt: blog.createdAt,
+      updatedAt: blog.updatedAt
+    }));
+
+    return res.status(200).json({
+      success: true,
+      message: 'Top 5 blogs by comments and likes',
+      data: formatted
+    });
+
+  } catch (error) {
+    console.error('Error in getTop5EngagedBlogs:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch top blogs',
+      error: error.message
+    });
+  }
+};
+
+
+
+// exports.getTop5PopularBlogs = async (req, res) => {
+//   try {
+//     const blogs = await Blog.findAll({
+//       attributes: {
+// include:
+//         [
+//           [
+//             sequelize.literal(`(
+//               SELECT COUNT(*) 
+//               FROM \`like\` 
+//               WHERE \`like\`.blogId = Blog.id AND \`like\`.type = 'like'
+//             )`),
+//             'likeCount'
+//           ]
+//           [
+//             sequelize.literal(`(
+//               SELECT COUNT(*) 
+//               FROM comments 
+//               WHERE comments.blogId = Blog.id
+//             )`),
+//             'commentCount'
+//           ]
+//         ]
+        
+
+//         // include: [
+//         //   [
+//         //     sequelize.literal(`(
+//         //       SELECT COUNT(*) 
+//         //       FROM comments AS comment 
+//         //       WHERE comment.blogId = Blog.id
+//         //     )`),
+//         //     'commentCount'
+//         //   ],
+//         //   [
+//         //     sequelize.literal(`(
+//         //       SELECT COUNT(*) 
+//         //       FROM \`like\` 
+//         //       WHERE \`like\`.blogId = Blog.id AND like.type = 'like'
+//         //     )`),
+//         //     'likeCount'
+//         //   ]
+//         // ]
+//       },
+//       include: [
+//         {
+//           model: User,
+//           as: 'author',
+//           attributes: ['id', 'name', 'email']
+//         },
+//         {
+//           model: Category,
+//           as: 'category',
+//           attributes: ['id', 'name']
+//         }
+//       ],
+//       order: [
+//         [sequelize.literal(`(
+//           SELECT COUNT(*) FROM likes AS like WHERE like.blogId = Blog.id AND like.type = 'like'
+//         ) + 
+//         (
+//           SELECT COUNT(*) FROM comments AS comment WHERE comment.blogId = Blog.id
+//         )`), 'DESC']
+//       ],
+//       limit: 5
+//     });
+
+//     const formattedBlogs = blogs.map(blog => ({
+//       id: blog.id,
+//       title: blog.title,
+//       content: blog.content,
+//       publish: blog.publish,
+//       thumbnail: blog.thumbnail ? `${APP_BASE_URL}/${blog.thumbnail}` : null,
+//       likeCount: blog.getDataValue('likeCount'),
+//       commentCount: blog.getDataValue('commentCount'),
+//       author: blog.author,
+//       category: blog.category,
+//       createdAt: blog.createdAt,
+//       updatedAt: blog.updatedAt
+//     }));
+
+//     return res.status(200).json({
+//       success: true,
+//       message: 'Top 5 popular blogs fetched successfully',
+//       data: formattedBlogs
+//     });
+
+//   } catch (error) {
+//     console.error('Error fetching top 5 popular blogs:', error);
+//     return res.status(500).json({
+//       success: false,
+//       message: 'Failed to fetch top blogs',
+//       error: error.message
+//     });
+//   }
+// };
+
 

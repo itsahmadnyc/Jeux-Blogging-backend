@@ -91,7 +91,6 @@ exports.addEmployee = async (req, res) => {
 };
 
 
-
 //GET ALL EMPLOYEE
 exports.getAllEmployees = async (req, res) => {
   try {

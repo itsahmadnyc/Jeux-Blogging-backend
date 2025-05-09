@@ -368,8 +368,6 @@ exports.empGetBlogById = async (req, res) => {
 
     const nestedComments = buildCommentTree(comments);
 
-    console.log("Nested comments are:", nestedComments);
-
     const totalComments = comments.length;
 
 

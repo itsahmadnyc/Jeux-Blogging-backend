@@ -1,6 +1,8 @@
-const { User, Blog, Comment, Like,Category, UserVisit } = require("../models");
+const { User, Blog, Comment, Like, Category, UserVisit } = require("../models");
 const response = require('../utils/responseHandler');
 const { Op } = require("sequelize");
+const path = require('path');
+
 const APP_BASE_URL = process.env.BASE_URL;
 
 
@@ -8,7 +10,7 @@ const APP_BASE_URL = process.env.BASE_URL;
 
 exports.adminStats = async (req, res) => {
   try {
-   
+
     const totalEmployees = await User.count({
       where: { role: 'employee' }
     });
@@ -34,24 +36,22 @@ exports.adminStats = async (req, res) => {
 
   } catch (error) {
     console.error('Error fetching Admin Stats:', error);
-    return response.internalServerError(res, 'Failed to fetch admin stats', {error: error.message});
+    return response.internalServerError(res, 'Failed to fetch admin stats', { error: error.message });
   }
 };
 
 
 
-
-
 exports.adminGetEmpDetailsById = async (req, res) => {
   try {
-    const adminId = req.user.id; // admin AuthId
+    const adminId = req.user.id;
 
-    if(!adminId){
+    if (!adminId) {
       return response.notFound(res, "AdminId is missing or invalid")
     }
 
     const employeeId = req.params.id;
-    
+
 
     // 1. Find the employee by ID and role
     const employee = await User.findOne({
@@ -65,7 +65,7 @@ exports.adminGetEmpDetailsById = async (req, res) => {
 
 
     const blogs = await Blog.findAll({
-      where: { userId: employeeId },
+      where: { userId: employeeId,  publish: true, },
       attributes: ['id', 'title', 'content', 'thumbnail', 'publish', 'createdAt', 'updatedAt'],
       include: [
         {
@@ -77,6 +77,16 @@ exports.adminGetEmpDetailsById = async (req, res) => {
           model: User,
           as: 'author',
           attributes: ['id', 'name'],
+        },
+        {
+          model: Comment,
+          as: 'comments',
+          attributes: ['id', 'content']
+        },
+        {
+          model: Like,
+          as: 'likes',
+          attributes: ['type'],
         }
       ]
     });
@@ -108,11 +118,31 @@ exports.adminGetEmpDetailsById = async (req, res) => {
     const totalUnLikeComments = likes.filter(like => like.type === 'dislike').length;
 
 
+    const formattedBlogs = blogs.map(blog => {
+      const blogData = blog.toJSON();
+      
+      const blogLikes = blogData.likes || [];
 
-    const formattedBlogs = blogs.map(blog => ({
-      ...blog.toJSON(), // convert Sequelize instance to plain object
-      thumbnail: blog.thumbnail ? `${APP_BASE_URL}/${blog.thumbnail}` : null
-    }));
+
+      const totalLikes = blogLikes.filter(l => l.type === 'like').length;
+      const totalDislikes = blogLikes.filter(l => l.type === 'dislike').length;
+
+      // Count comments
+      const blogComments = blogData.comments || [];
+      const totalComments = blogComments.length;
+
+
+      blogData.thumbnail = blogData.thumbnail ? `${APP_BASE_URL}/uploads/${path.basename(blogData.thumbnail)}` : null;
+
+
+
+      blogData.totalLikes = totalLikes;
+      blogData.totalDislikes = totalDislikes;
+      blogData.totalComments = totalComments;
+
+      return blogData;
+    });
+
 
     return response.ok(res, 'Employee details fetched successfully', {
       employee,

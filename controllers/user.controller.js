@@ -4,6 +4,9 @@ const response = require("../utils/responseHandler");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { buildCommentTree } = require("../utils/buildCommentTree");
+const APP_BASE_URL = process.env.BASE_URL;
+
+
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret-key";
 
@@ -34,10 +37,10 @@ exports.addEmployee = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    // const baseUrl = `${req.protocol}://${req.get("host")}`;
 
     const profileImage = req.file
-      ? `${baseUrl}/uploads/${req.file.filename}`
+      ? `${APP_BASE_URL}/uploads/${req.file.filename}`
       : null;
 
     const employee = await User.create({
@@ -55,6 +58,21 @@ exports.addEmployee = async (req, res) => {
       { expiresIn: "7d" }
     );
 
+    const subject  = "Welcome to Jeux Developers team..!";
+    const text = `Hi ${name}, \n\nYou have been added as an employee. Your email Id is ${employeeId}.\n\nWelcome in Jeux! \n\nBest Regards, \nAdmin Team `;
+
+    const html = `
+    <p> Hi <strong>${name}</strong>, </p>
+    <p> You have been added as an emplyoee to our system. </p>
+    <p> <strong> Employee ID: </strong> ${employeeId} </p>
+    <p> Welcome aboard! </p>
+    <br />
+    <p> Best regards, <br/> Admin Team </p>
+    `;
+
+    await sendEmail(email, subject, text, html);
+
+
     return response.created(res, "Employee added successfully", {
       id: employee.id,
       name: employee.name,
@@ -71,6 +89,8 @@ exports.addEmployee = async (req, res) => {
     });
   }
 };
+
+
 
 //GET ALL EMPLOYEE
 exports.getAllEmployees = async (req, res) => {
@@ -97,6 +117,8 @@ exports.getAllEmployees = async (req, res) => {
   }
 };
 
+
+
 //DELETE EMPLOYEE
 exports.deleteEmployee = async (req, res) => {
   try {
@@ -120,6 +142,8 @@ exports.deleteEmployee = async (req, res) => {
     });
   }
 };
+
+
 
 // UPDATE EMPLOYEE
 exports.updateEmployee = async (req, res) => {
@@ -173,6 +197,8 @@ exports.updateEmployee = async (req, res) => {
   }
 };
 
+
+
 //EMPLOYEE BY ID
 exports.getEmployeeById = async (req, res) => {
   try {
@@ -196,6 +222,8 @@ exports.getEmployeeById = async (req, res) => {
   }
 };
 
+
+
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
@@ -212,6 +240,8 @@ exports.getAllUsers = async (req, res) => {
     });
   }
 };
+
+
 
 exports.deleteUser = async (req, res) => {
   try {

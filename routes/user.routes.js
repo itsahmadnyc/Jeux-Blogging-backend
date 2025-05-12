@@ -7,6 +7,7 @@ const { profileImage } = require('../middlewares/upload');
 
 
 const { updateProfileImage, contactUs, userGetAllBlogs, likeOrDislikeBlog, addCommentsOrReply, userDeleteAccount } = require('../controllers/user.controller');
+const optionalAuth = require("../middlewares/optionalAuth")
 
 
 
@@ -40,7 +41,7 @@ router.delete('/delete', authMiddleware, userDeleteAccount);
 router.post('/comment/:blogId', authMiddleware, addCommentsOrReply);
 
 
-router.post('/like-dislike/:blogId', authMiddleware, likeOrDislikeBlog);
+router.post('/like-dislike/:blogId', optionalAuth, likeOrDislikeBlog);
 
 
 

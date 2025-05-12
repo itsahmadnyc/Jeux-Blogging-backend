@@ -402,36 +402,54 @@ exports.likeOrDislikeBlog = async (req, res) => {
   try {
     const { blogId } = req.params;
     const { type } = req.body;
-    const userId = req.user.id;
+    const userId = req.user ? req.user.id : null; // allow anonymous likes
 
     if (!["like", "dislike"].includes(type)) {
       return response.notFound(
         res,
-        'Invalid type, must be "like" or "dislike". '
+        'Invalid type, must be "like" or "dislike".'
       );
     }
+
     const blog = await Blog.findByPk(blogId);
     if (!blog) {
       return response.notFound(res, "Blog not found..!");
     }
 
-    const [reaction, created] = await Like.findOrCreate({
-      where: { blogId, userId },
-      defaults: { type },
-    });
+    let reaction;
 
-    if (!created) {
-      if (reaction.type === type) {
-        await reaction.destroy();
-        return response.ok(res, `${type} removed`, { blogId, userId });
-      } else {
-        reaction.type = type;
-        await reaction.save();
-        return response.ok(res, `Changed to ${type}`, { blogId, userId });
+    if (userId) {
+      // Logged-in user logic
+      const [existingReaction, created] = await Like.findOrCreate({
+        where: { blogId, userId },
+        defaults: { type },
+      });
+
+      if (!created) {
+        if (existingReaction.type === type) {
+          await existingReaction.destroy();
+          return response.ok(res, `${type} removed`, { blogId, userId });
+        } else {
+          existingReaction.type = type;
+          await existingReaction.save();
+          return response.ok(res, `Changed to ${type}`, { blogId, userId });
+        }
       }
-    }
 
-    return response.created(res, `${type} added`, { blogId, userId });
+      return response.created(res, `${type} added`, { blogId, userId });
+    } else {
+      // Anonymous user logic
+      reaction = await Like.create({
+        blogId,
+        type,
+        userId: null,
+      });
+
+      return response.created(res, `${type} added anonymously`, {
+        blogId,
+        userId: null,
+      });
+    }
   } catch (error) {
     console.error(error);
     return response.internalServerError(res, "Server Error", {
@@ -441,11 +459,12 @@ exports.likeOrDislikeBlog = async (req, res) => {
 };
 
 
+
 exports.addCommentsOrReply = async (req, res) => {
   try {
     const { blogId } = req.params;
     const { content, parentId } = req.body;
-    const userId = req.user.id;
+    const userId = req.user ? req.user.id: null;
 
     if (!content) {
       return response.notFound(res, "Content is not found..!");
@@ -481,6 +500,8 @@ exports.addCommentsOrReply = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
 
 exports.userDeleteAccount = async (req, res) => {
   try {

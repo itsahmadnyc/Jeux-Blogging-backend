@@ -6,7 +6,7 @@ const Like = sequelize.define('Like', {
     type: { type: DataTypes.ENUM('like', 'dislike'), allowNull: false },
     userId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
             model: 'users',
             key: 'id'

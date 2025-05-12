@@ -464,7 +464,7 @@ exports.addCommentsOrReply = async (req, res) => {
   try {
     const { blogId } = req.params;
     const { content, parentId } = req.body;
-    const userId = req.user ? req.user.id: null;
+    const userId = req.user ? req.user.id : null;
 
     if (!content) {
       return response.notFound(res, "Content is not found..!");
@@ -475,24 +475,36 @@ exports.addCommentsOrReply = async (req, res) => {
       return response.notFound(res, "Blog is not found");
     }
 
-    if (!userId) {
-      return response.notFound(res, "Token is missing or invalid..!");
-    }
+if (parentId) {
+  const parentComment = await Comment.findOne({
+    where: {
+      id: parentId,
+      blogId: blogId, //Ensure it is the comment of same blog
+    },
+  });
 
-    if (parentId) {
-      const parentComment = await Comment.findByPk(parentId);
-      if (!parentComment) {
-        return res.status(404).json({ message: "Parent comment not found" });
-      }
-    }
+  if (!parentComment) {
+    return res.status(400).json({
+      message: "Invalid parentId: No such comment exists for this blog",
+    });
+  }
+}
+
+
+    // if (parentId) {
+    //   const parentComment = await Comment.findByPk(parentId);
+    //   if (!parentComment) {
+    //     return res.status(404).json({ message: "Parent comment not found" });
+    //   }
+    // }
+
 
     const comment = await Comment.create({
       content,
-      userId,
+      userId, // May be null for anonymous
       blogId,
       parentId: parentId || null,
     });
-
 
     return response.ok(res, "Comment is added successfully", comment);
   } catch (error) {

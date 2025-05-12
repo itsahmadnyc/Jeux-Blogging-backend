@@ -38,9 +38,9 @@ router.post('/contact', contactUs);
 
 router.get('/userAllBlogs', userGetAllBlogs);
 router.delete('/delete', authMiddleware, userDeleteAccount);
-router.post('/comment/:blogId', authMiddleware, addCommentsOrReply);
 
 
+router.post('/comment/:blogId', optionalAuth, addCommentsOrReply);
 router.post('/like-dislike/:blogId', optionalAuth, likeOrDislikeBlog);
 
 

@@ -10,6 +10,7 @@ const APP_BASE_URL = process.env.BASE_URL;
 
 exports.adminStats = async (req, res) => {
   try {
+    
 
     const totalEmployees = await User.count({
       where: { role: 'employee' }

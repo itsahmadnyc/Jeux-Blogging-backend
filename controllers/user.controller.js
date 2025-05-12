@@ -445,6 +445,8 @@ exports.likeOrDislikeBlog = async (req, res) => {
         userId: null,
       });
 
+
+      console.log(" Reaction is: ",reaction)
       return response.created(res, `${type} added anonymously`, {
         blogId,
         userId: null,
@@ -474,6 +476,7 @@ exports.addCommentsOrReply = async (req, res) => {
     if (!blog) {
       return response.notFound(res, "Blog is not found");
     }
+    
 
 if (parentId) {
   const parentComment = await Comment.findOne({

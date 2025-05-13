@@ -25,7 +25,15 @@ const Comment = sequelize.define('Comment', {
             model: 'comments', key: 'id'
         }
     },
-    content: { type: DataTypes.STRING },
+    
+    // content: { type: DataTypes.STRING },
+
+    content: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        charset: 'utf8mb4',
+        collate: 'utf8mb4_unicode_ci',
+    }
 },
     { tableName: 'comments', timestamps: true },
 )

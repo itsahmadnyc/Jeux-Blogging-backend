@@ -18,6 +18,7 @@ exports.adminStats = async (req, res) => {
 
     const totalComments = await Comment.count();
 
+
     const totalUserVisits = await UserVisit.count();
 
     const totalLikes = await Like.count({

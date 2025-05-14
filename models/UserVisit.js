@@ -3,20 +3,24 @@ const { sequelize } = require("../config/database");
 
 
 const UserVisit = sequelize.define("UserVisit", {
-    userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'users', 
-          key: 'id'
-        }
-      },
-      visitedAt: {
-       type: DataTypes.DATE,
-       defaultValue: DataTypes.NOW,   //SET AS DEFAULT CURRENT TIMESTAMP
-       allowNull: false
-      },
-      
+
+  visitedAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,   //SET AS DEFAULT CURRENT TIMESTAMP
+    allowNull: false
+  },
+
+  visitorId: {
+    type: DataTypes.STRING, // GENERATE UNIQUE ID FRONTEND
+    allowNull: false
+  },
+  ipAddress: {
+    type: DataTypes.STRING, 
+    allowNull: true
+  },
+  
+
+
 })
 
 

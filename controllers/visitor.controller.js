@@ -17,6 +17,8 @@ exports.trackVisitor = async (req, res) => {
       ipAddress
     };
 
+    console.log("ipAddress is:", ipAddress);
+
     await UserVisit.create(visitData);
 
     return response.ok(res, "Visit logged successfully!");

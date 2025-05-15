@@ -116,7 +116,6 @@ exports.getCategoryById = async (req, res) => {
         where: { id },
         attributes: ['id', 'name', 'description', 'createdAt', 'updatedAt']
       });
-      console.log("Categoty is :", category)
   
       if (!category) {
         return response.notFound(res, 'Category not found');

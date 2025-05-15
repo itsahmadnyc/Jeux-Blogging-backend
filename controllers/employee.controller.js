@@ -83,7 +83,9 @@ exports.empPublishedBlogs = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    console.log("User Is in Published Controller", userId)
+    if(!userId){
+      return response.notFound(res, "Token is missing or invalid")
+    }
 
     const publishedBlogs = await Blog.findAll({
       where: {
@@ -275,7 +277,7 @@ exports.employeeStatus = async (req, res) => {
     });
 
 
-    return response.ok(res, 'Employee Stats records are', {
+    return response.ok(res, 'Employee Status records are', {
       totalBlogs,
       publishedBlogs,
       draftBlogs,
@@ -332,6 +334,7 @@ exports.empGetBlogById = async (req, res) => {
     }
 
 
+
     const blog = await Blog.findOne({
       where: {
         id: blogId,
@@ -351,6 +354,7 @@ exports.empGetBlogById = async (req, res) => {
       ],
     });
 
+
     if (!blog) {
       return response.notFound(res, "Blog not found or you're not authorized to view it.");
     }
@@ -366,6 +370,9 @@ exports.empGetBlogById = async (req, res) => {
       ],
       order: [['createdAt', 'ASC']],
     });
+
+
+    
 
     const nestedComments = buildCommentTree(comments);
 

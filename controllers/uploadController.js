@@ -35,7 +35,7 @@ exports.uploadMedia = async (req, res) => {
         mediaFile
       }
     });
-
+    
   } catch (error) {
     console.error("Error to file Upload:", error);
     return response.internalServerError(res, "Failed to upload files", { error: error.message });

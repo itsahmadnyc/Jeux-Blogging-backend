@@ -8,7 +8,7 @@ const APP_BASE_URL = process.env.BASE_URL;
 
 
 
-const JWT_SECRET = process.env.JWT_SECRET || "secret-key";
+const JWT_SECRET = process.env.JWT_SECRET || "SalaarSikandar@009";
 
 // ADD EMPLOYEE
 exports.addEmployee = async (req, res) => {
@@ -71,6 +71,7 @@ exports.addEmployee = async (req, res) => {
     `;
 
     await sendEmail(email, subject, text, html);
+    
 
 
     return response.created(res, "Employee added successfully", {
@@ -278,8 +279,8 @@ exports.updateProfileImage = async (req, res) => {
       return response.badRequest(res, "No image uploaded");
     }
 
-    const baseUrl = process.env.BASE_URL;
-    const profileImageUrl = `${baseUrl}/uploads/${req.file.filename}`;
+    // const baseUrl = process.env.BASE_URL;
+    const profileImageUrl = `${APP_BASE_URL}/uploads/${req.file.filename}`;
 
     const user = await User.findByPk(userId);
     if (!user) {
@@ -506,8 +507,6 @@ exports.addCommentsOrReply = async (req, res) => {
     //     return res.status(404).json({ message: "Parent comment not found" });
     //   }
     // }
-
-
     const comment = await Comment.create({
       content,
       userId, // May be null for anonymous
@@ -539,12 +538,8 @@ exports.userDeleteAccount = async (req, res) => {
       res,
       "User account has been deleted successfully..!"
     );
-  } catch (error) {
-    return response.internalServerError(
-      res,
-      "Server Error.! Faild to delete user account..!",
-      { error: error.message }
-    );
+  } catch(error) {
+    return response.internalServerError(res, "Server Error.! Faild to delete user account..!",{ error: error.message });
   }
 };
 
@@ -572,12 +567,7 @@ exports.getCommentsWithReplies = async (req, res) => {
     res.status(200).json({ success: true, comments: commentTree });
   } catch (error) {
     console.error("Error fetching comments:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Something went wrong fetching comments",
-      });
+    return response.internalServerError(res, "Server Error.! Failed to fetch comments with replies..!", {error: error.message})
   }
 };
 

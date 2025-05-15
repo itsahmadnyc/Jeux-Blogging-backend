@@ -107,8 +107,6 @@ exports.adminGetEmpDetailsById = async (req, res) => {
     });
 
     const blogIds = blogs.map(blog => blog.id);
-
-
     const totalBlogs = blogs.length;
 
 

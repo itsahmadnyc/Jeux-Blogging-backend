@@ -3,9 +3,7 @@ const response = require('../utils/responseHandler');
 const { sequelize } = require("../config/database");
 const Sequelize = require('sequelize');
 const path = require("path");
-
-const { buildCommentTree } = require('../utils/buildCommentTree'); // Make sure this utility exists
-
+const { buildCommentTree } = require('../utils/buildCommentTree'); 
 const APP_BASE_URL = process.env.BASE_URL;
 
 
@@ -126,6 +124,7 @@ exports.deleteBlogComments = async (req, res) => {
 
 
 
+
 exports.globalBlogDetailsById = async (req, res) => {
   try {
     const blogId = req.params.id;
@@ -170,6 +169,8 @@ exports.globalBlogDetailsById = async (req, res) => {
     const nestedComments = buildCommentTree(comments);
     const totalComments = comments.length;
 
+    // console.log("Nested Comments are:", nestedComments);
+
     const blogData = blog.toJSON();
 
     // Calculate likes and dislikes
@@ -200,6 +201,8 @@ exports.globalBlogDetailsById = async (req, res) => {
     });
   }
 };
+
+
 
 
 
@@ -280,85 +283,4 @@ exports.getTopFiveBlogs = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-// GlobalBlogDetailsById without dislike
-
-// exports.globalBlogDetailsById = async (req, res) => {
-//   try {
-//     const blogId = req.params.id;
-
-//     const blog = await Blog.findOne({
-//       where: { id: blogId },
-//       include: [
-//         {
-//           model: Category,
-//           as: 'category',
-//           attributes: ['id', 'name'],
-//         },
-//         {
-//           model: User,
-//           as: 'author',
-//           attributes: ['id', 'name', 'email', 'profileImage'],
-//         },
-//         {
-//           model: Like,
-//           as: 'likes',
-//           attributes: ['type'],
-//         }
-//       ],
-//     });
-
-//     if (!blog) {
-//       return response.notFound(res, "Blog not found.");
-//     }
-
-//     const comments = await Comment.findAll({
-//       where: { blogId },
-//       include: [
-//         {
-//           model: User,
-//           as: 'author',
-//           attributes: ['id', 'name', 'email'],
-//         },
-//       ],
-//       order: [['createdAt', 'ASC']],
-//     });
-
-//     const nestedComments = buildCommentTree(comments);
-//     const totalComments = comments.length;
-
-//     const blogData = blog.toJSON();
-
-//     // Count total likes only (no dislikes anymore)
-//     const blogLikes = blogData.likes || [];
-//     blogData.totalLikes = blogLikes.length;
-
-//     blogData.thumbnailUrl = blog.thumbnail
-//       ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
-//       : null;
-//     blogData.totalComments = totalComments;
-//     blogData.comments = nestedComments;
-
-//     // Count total published blogs of the author
-//     const authorId = blogData.author?.id;
-//     if (authorId) {
-//       const authorBlogCount = await Blog.count({ where: { userId: authorId, publish: true } });
-//       blogData.author.totalBlogs = authorBlogCount;
-//     }
-
-//     return response.ok(res, 'Blog fetched successfully.', { blog: blogData });
-
-//   } catch (error) {
-//     console.error('Error fetching blog by ID:', error);
-//     return response.internalServerError(res, 'Failed to fetch blog.', {
-//       error: error.message,
-//     });
-//   }
-// };
 

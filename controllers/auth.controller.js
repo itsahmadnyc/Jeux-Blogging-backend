@@ -5,7 +5,7 @@ const response = require("../utils/responseHandler");
 const logger = require("../utils/logger")
 
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'SalaarSikandar@009';
 
 
 
@@ -62,8 +62,6 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ where: { email } });
     if (!user) return response.notFound(res, 'User not found');
 
-    // await UserVisit.create({ userId: user.id }); // 14/5
-
 
     if(user.isBlocked){
 
@@ -78,9 +76,6 @@ exports.login = async (req, res) => {
 
 
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-
-
-    
 
     await user.save();
 
@@ -97,9 +92,6 @@ exports.login = async (req, res) => {
     return response.internalServerError(res, 'Something went wrong during login', { error: error.message });
   }
 };
-
-
-
 
 
 

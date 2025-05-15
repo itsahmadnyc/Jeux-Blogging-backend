@@ -10,6 +10,7 @@ const APP_BASE_URL = process.env.BASE_URL;
 
 
 
+
 exports.createBlog = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -220,6 +221,7 @@ exports.updateEmployeeBlog = async (req, res) => {
     if (wasUnpublished && isNowPublished) {
       await notifyAllSubscribersAndUsers(blog.title);
     }
+    
 
 
     const blogData = blog.toJSON();
@@ -232,7 +234,6 @@ exports.updateEmployeeBlog = async (req, res) => {
     return response.internalServerError(res, 'Failed to update blog.', { error: error.message });
   }
 };
-
 
 
 exports.employeeStatus = async (req, res) => {

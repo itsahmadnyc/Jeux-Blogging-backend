@@ -10,7 +10,7 @@ const APP_BASE_URL = process.env.BASE_URL;
 
 exports.adminStats = async (req, res) => {
   try {
-    
+
 
     const totalEmployees = await User.count({
       where: { role: 'employee' }
@@ -18,7 +18,20 @@ exports.adminStats = async (req, res) => {
 
     const totalComments = await Comment.count();
 
+
     const totalUserVisits = await UserVisit.count();
+
+    const totalUniqueVisitors = await UserVisit.count({
+      distinct: true,
+      col: 'visitorId',
+
+      // where: {
+      //   visitedAt: {
+      //     [Op.gte]: new Date(Date.now() - 24 * 60 * 60 * 1000) // Unique visitors in last 24 hours
+      //   }
+      // }
+
+    })
 
     const totalLikes = await Like.count({
       where: { type: 'like' }
@@ -31,7 +44,8 @@ exports.adminStats = async (req, res) => {
         totalEmployees,
         totalComments,
         totalUserVisits,
-        totalLikes
+        totalLikes,
+        totalUniqueVisitors
       }
     });
 
@@ -66,7 +80,7 @@ exports.adminGetEmpDetailsById = async (req, res) => {
 
 
     const blogs = await Blog.findAll({
-      where: { userId: employeeId,  publish: true, },
+      where: { userId: employeeId, publish: true, },
       attributes: ['id', 'title', 'content', 'thumbnail', 'publish', 'createdAt', 'updatedAt'],
       include: [
         {
@@ -119,10 +133,10 @@ exports.adminGetEmpDetailsById = async (req, res) => {
     const totalUnLikeComments = likes.filter(like => like.type === 'dislike').length;
 
 
-    
+
     const formattedBlogs = blogs.map(blog => {
       const blogData = blog.toJSON();
-      
+
       const blogLikes = blogData.likes || [];
 
 

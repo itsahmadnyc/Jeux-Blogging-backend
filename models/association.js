@@ -111,11 +111,10 @@ module.exports = (sequelize) => {
     });
 
 
-    UserVisit.belongsTo(User, {
-        foreignKey: 'userId',
-        as: 'user'
-    });
-
+    // UserVisit.belongsTo(User, {
+    //     foreignKey: 'userId',
+    //     as: 'user'
+    // });
 
 
 

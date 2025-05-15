@@ -58,7 +58,7 @@ exports.addEmployee = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    const subject  = "Welcome to Jeux Developers team..!";
+    const subject = "Welcome to Jeux Developers team..!";
     const text = `Hi ${name}, \n\nYou have been added as an employee. Your email Id is ${employeeId}.\n\nWelcome in Jeux! \n\nBest Regards, \nAdmin Team `;
 
     const html = `
@@ -268,12 +268,12 @@ exports.deleteUser = async (req, res) => {
 
 exports.updateProfileImage = async (req, res) => {
   try {
-    const userId = req.user.id; 
+    const userId = req.user.id;
 
-    if(!userId){
+    if (!userId) {
       return response.badRequest(res, "Token is missing or invalid");
     }
-   
+
     if (!req.file) {
       return response.badRequest(res, "No image uploaded");
     }
@@ -398,11 +398,14 @@ exports.userGetAllBlogs = async (req, res) => {
   }
 };
 
+
+
+
 exports.likeOrDislikeBlog = async (req, res) => {
   try {
     const { blogId } = req.params;
     const { type } = req.body;
-    const userId = req.user ? req.user.id : null; // allow anonymous likes
+    const userId = req.user ? req.user.id : null; 
 
     if (!["like", "dislike"].includes(type)) {
       return response.notFound(
@@ -446,7 +449,6 @@ exports.likeOrDislikeBlog = async (req, res) => {
       });
 
 
-      console.log(" Reaction is: ",reaction)
       return response.created(res, `${type} added anonymously`, {
         blogId,
         userId: null,
@@ -472,26 +474,30 @@ exports.addCommentsOrReply = async (req, res) => {
       return response.notFound(res, "Content is not found..!");
     }
 
+    if (content.length > 500) {
+  return response.badRequest(res, "Comment is too long");
+}
+
     const blog = await Blog.findByPk(blogId);
     if (!blog) {
       return response.notFound(res, "Blog is not found");
     }
-    
 
-if (parentId) {
-  const parentComment = await Comment.findOne({
-    where: {
-      id: parentId,
-      blogId: blogId, //Ensure it is the comment of same blog
-    },
-  });
 
-  if (!parentComment) {
-    return res.status(400).json({
-      message: "Invalid parentId: No such comment exists for this blog",
-    });
-  }
-}
+    if (parentId) {
+      const parentComment = await Comment.findOne({
+        where: {
+          id: parentId,
+          blogId: blogId, //Ensure it is the comment of same blog
+        },
+      });
+
+      if (!parentComment) {
+        return res.status(400).json({
+          message: "Invalid parentId: No such comment exists for this blog",
+        });
+      }
+    }
 
 
     // if (parentId) {
@@ -574,3 +580,56 @@ exports.getCommentsWithReplies = async (req, res) => {
       });
   }
 };
+
+
+
+
+
+
+
+
+
+// Toggle Like and Dislike 
+// exports.likeOrDislikeBlog = async (req, res) => {
+//   try {
+//     const { blogId } = req.params;
+//     const { type } = req.body;
+//     const userId = req.user ? req.user.id : null; 
+
+//     if (type !== "like") {
+//       return response.notFound(res, 'Only "like" type is supported.');
+//     }
+
+//     const blog = await Blog.findByPk(blogId);
+//     if (!blog) {
+//       return response.notFound(res, "Blog not found");
+//     }
+
+//     // Check if a like already exists by this user (or anonymous)
+//     const existingLike = await Like.findOne({
+//       where: {
+//         blogId,
+//         userId, 
+//       },
+//     });
+
+//     if (existingLike) {
+    
+//       await existingLike.destroy();
+//       return response.ok(res, "Like removed", { blogId, userId });
+//     } else {
+      
+//       await Like.create({
+//         blogId,
+//         userId,
+//         type: "like",
+//       });
+//       return response.created(res, "Like added", { blogId, userId });
+//     }
+//   } catch (error) {
+//     console.error("Error in likeOrDislikeBlog:", error);
+//     return response.internalServerError(res, "Internal Server Error", {
+//       error: error.message,
+//     });
+//   }
+// };

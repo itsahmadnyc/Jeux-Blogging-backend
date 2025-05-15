@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const {User, UserVisit} = require('../models');
 const response = require("../utils/responseHandler");
 const logger = require("../utils/logger")
 
@@ -62,6 +62,8 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ where: { email } });
     if (!user) return response.notFound(res, 'User not found');
 
+    // await UserVisit.create({ userId: user.id }); // 14/5
+
 
     if(user.isBlocked){
 
@@ -77,6 +79,9 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
 
+
+    
+
     await user.save();
 
     return response.ok(res, 'Login successful', {
@@ -85,6 +90,7 @@ exports.login = async (req, res) => {
       email: user.email,
       role: user.role,
       token,
+      
     });
   } catch (error) {
     console.error('Login Error:', error);

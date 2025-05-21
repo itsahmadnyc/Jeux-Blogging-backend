@@ -9,8 +9,6 @@ const APP_BASE_URL = process.env.BASE_URL;
 
 
 
-
-
 exports.createBlog = async (req, res) => {
   try {
     const userId = req.user.id;

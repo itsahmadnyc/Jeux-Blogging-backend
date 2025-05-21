@@ -128,6 +128,7 @@ exports.getCategoryById = async (req, res) => {
       return response.internalServerError(res, 'Failed to fetch category', { error: error.message });
     }
   };
+  
 
   
   

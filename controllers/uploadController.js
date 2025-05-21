@@ -1,5 +1,6 @@
 const { MediaFiles } = require("../models");
 const response = require("../utils/responseHandler");
+const path = require("path")
 const APP_BASE_URL = process.env.BASE_URL;
 
 
@@ -19,6 +20,8 @@ exports.uploadMedia = async (req, res) => {
   if (!uploadedFile) {
     return response.notFound(res, "No file uploaded.");
   }
+  // const pathParts = req.file.destination.split(path.sep);
+  // const folderName = pathParts[pathParts.length - 1];
 
   const fileUrl = `${APP_BASE_URL}/uploads/${uploadedFile.filename}`;
 
@@ -35,17 +38,10 @@ exports.uploadMedia = async (req, res) => {
         mediaFile
       }
     });
-    
+
   } catch (error) {
     console.error("Error to file Upload:", error);
     return response.internalServerError(res, "Failed to upload files", { error: error.message });
   }
 };
-
-
-
-
-
-
-
 

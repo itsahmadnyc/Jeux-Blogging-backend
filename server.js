@@ -6,7 +6,7 @@ const HOST = '0.0.0.0';
 
 connectDB().then(() => {
   app.listen(PORT, HOST, () => {
-    console.log(`🚀 Server running on http://${getLocalIP()}:${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
   });
 }).catch((err) => {
   console.error('❌ Server failed to start:', err);

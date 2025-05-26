@@ -33,7 +33,7 @@ const imageFilter = function (req, file, cb) {
 const profileImage = multer({
   storage,
   fileFilter: imageFilter,
-  limits: { fileSize: 6 * 1024 * 1024 }, // max 5MB
+  limits: { fileSize: 50 * 1024 * 1024 }, // max 5MB
 }).single('profileImage'); // Only one profileImage at a time
 
 module.exports = {

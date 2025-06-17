@@ -1,8 +1,9 @@
-const { MediaFiles } = require("../models");
+const { MediaFiles,  } = require("../models");
 const response = require("../utils/responseHandler");
 const path = require("path")
 const APP_BASE_URL = process.env.BASE_URL;
 const fs = require('fs');
+const AdsMedia = require("../models/AdsMedia");
 
 
 
@@ -12,11 +13,11 @@ const fs = require('fs');
 
 exports.allMediaFiles = async (req, res) => {
   try {
-    console.log("Fetching all media files...");
+   
     
     
     
-    const mediaFiles = await MediaFiles.findAll({
+    const mediaFiles = await AdsMedia.findAll({
       order: [['createdAt', 'DESC']],
     });
 
@@ -98,7 +99,7 @@ exports.uploadMediaWithTitle = async (req, res) => {
     const fileType = uploadedFile.mimetype;
 
     
-    const mediaFile = await MediaFiles.create({
+    const mediaFile = await AdsMedia.create({
       userId,
       title,
       fileUrl,

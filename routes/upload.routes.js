@@ -8,7 +8,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
 // Debug middleware - add this temporarily
 
 
-router.get('/media', allMediaFiles);
+router.get('/ads-media', allMediaFiles);
 router.post('/upload', authMiddleware, mediaUploadHandler, uploadMedia);
 router.post('/media-upload', authMiddleware, mediaUploadHandler, uploadMediaWithTitle); 
 router.delete('/media-delete/:id', authMiddleware, deleteMediaFile);

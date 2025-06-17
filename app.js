@@ -17,7 +17,8 @@ const uploadRoutes = require('./routes/upload.routes');
 const adminReadBlogsRoutes = require('./routes/admin.blogs.routes');
 const newsletterRoutes = require("./routes/subscribe.routes")
 const publishDraftRoutes = require("./routes/emp-publish-draft.routes");
-const visitorRoutes = require('./routes/visitor.routes')
+const visitorRoutes = require('./routes/visitor.routes');
+const commentRoutes = require('./routes/comments.routes');
 
 
 require('dotenv').config();
@@ -61,6 +62,7 @@ app.use('/api/blog', adminReadBlogsRoutes);
 app.use('/api', newsletterRoutes);
 app.use('/api/emp', publishDraftRoutes);
 app.use('/api', visitorRoutes);
+app.use('/api/blogs', commentRoutes);
 
 
 

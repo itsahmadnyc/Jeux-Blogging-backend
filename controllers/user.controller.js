@@ -307,7 +307,7 @@ exports.updateProfileImage = async (req, res) => {
 
 exports.contactUs = async (req, res) => {
   try {
-    const { name, email, phoneNumber, projectType } = req.body;
+    const { name, email, phoneNumber, projectType,description  } = req.body;
 
     if (!name || !email || !phoneNumber || !projectType) {
       return response.badRequest(res, 'All fields are required.');
@@ -318,6 +318,7 @@ exports.contactUs = async (req, res) => {
       email,
       phoneNumber,
       projectType,
+      description: description || null
     });
 
     // Email notification to admin
@@ -330,6 +331,7 @@ Name: ${name}
 Email: ${email}
 Phone Number: ${phoneNumber}
 Project Type: ${projectType}
+${description ? `Description: ${description}` : ''}
 
 Submitted via Jeux developers Platform.
     `;
@@ -462,7 +464,6 @@ exports.likeOrDislikeBlog = async (req, res) => {
     });
   }
 };
-
 
 
 

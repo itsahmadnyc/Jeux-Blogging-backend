@@ -9,6 +9,31 @@ const fs = require('fs');
 
 
 
+
+exports.allMediaFiles = async (req, res) => {
+  try {
+    console.log("Fetching all media files...");
+    
+    
+    
+    const mediaFiles = await MediaFiles.findAll({
+      order: [['createdAt', 'DESC']],
+    });
+
+    return res.status(200).json({
+      message: 'Media files fetched successfully.',
+      data: mediaFiles
+    });
+  } catch (error) {
+    console.error('Fetch error:', error);
+    return res.status(500).json({ error: 'Failed to fetch media files.' });
+  }
+};
+
+
+
+
+
 exports.uploadMedia = async (req, res) => {
   const userId = req.user.id;
 
@@ -137,21 +162,5 @@ exports.deleteMediaFile = async (req, res) => {
 
 
 
-exports.allMediaFiles = async (req, res) => {
-  try {
-    
-    const mediaFiles = await MediaFiles.findAll({
-      order: [['createdAt', 'DESC']],
-    });
-
-    return res.status(200).json({
-      message: 'Media files fetched successfully.',
-      data: mediaFiles
-    });
-  } catch (error) {
-    console.error('Fetch error:', error);
-    return res.status(500).json({ error: 'Failed to fetch media files.' });
-  }
-};
 
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {getAllMediaFiles, uploadMedia, uploadMediaWithTitle, deleteMediaFile} = require('../controllers/uploadController');
+const {allMediaFiles, uploadMedia, uploadMediaWithTitle, deleteMediaFile} = require('../controllers/uploadController');
 const mediaUploadHandler = require("../middlewares/mediaUploadHandler");
 const authMiddleware = require('../middlewares/auth.middleware');
 
@@ -8,7 +8,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
 
 
 
-router.get('/', getAllMediaFiles);
+router.get('/media', allMediaFiles);
 
 router.post('/upload', authMiddleware, mediaUploadHandler, uploadMedia);
 

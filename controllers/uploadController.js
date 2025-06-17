@@ -137,7 +137,7 @@ exports.deleteMediaFile = async (req, res) => {
 
 
 
-exports.getAllMediaFiles = async (req, res) => {
+exports.allMediaFiles = async (req, res) => {
   try {
     
     const mediaFiles = await MediaFiles.findAll({

@@ -36,7 +36,7 @@ const fileFilter = function (req, file, cb) {
 const mediaUploadHandler = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 }, 
+  limits: { fileSize: 200 * 1024 * 1024 }, 
 });
 
 

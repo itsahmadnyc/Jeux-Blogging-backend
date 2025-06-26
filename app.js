@@ -40,18 +40,7 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ADD THIS DEBUG MIDDLEWARE - PUT IT EARLY
-app.use((req, res, next) => {
-  console.log('=== MAIN APP DEBUG ===');
-  console.log('Timestamp:', new Date().toISOString());
-  console.log('Method:', req.method);
-  console.log('URL:', req.url);
-  console.log('Original URL:', req.originalUrl);
-  console.log('Headers:', Object.keys(req.headers));
-  console.log('Authorization:', req.headers.authorization ? 'Present' : 'Not present');
-  console.log('=======================');
-  next();
-});
+
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

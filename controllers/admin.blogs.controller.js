@@ -344,7 +344,6 @@ exports.getTopFiveBlogs = async (req, res) => {
       updatedAt: blog.updatedAt
     }));
 
-    console.log("Formatted is: ", formatted)
 
 
     return res.status(200).json({

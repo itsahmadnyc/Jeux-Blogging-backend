@@ -11,13 +11,11 @@ const AdsMedia = require("../models/AdsMedia");
 
 
 
-exports.allMediaFiles = async (req, res) => {
+exports.allAdsMediaFiles = async (req, res) => {
   try {
    
-    
-    
-    
     const mediaFiles = await AdsMedia.findAll({
+      attributes: { exclude: ['userId'] },
       order: [['createdAt', 'DESC']],
     });
 

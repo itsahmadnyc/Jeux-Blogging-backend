@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/auth.middleware');
 const checkAdmin = require('../middlewares/admin/checkAdmin');
-const { addEmployee, getAllEmployees, deleteEmployee, updateEmployee, getEmployeeById, getAllUsers, deleteUser, getAllContactRequests } = require('../controllers/user.controller');
+const {editEmployee, addEmployee, getAllEmployees, deleteEmployee, getEmployeeById, getAllUsers, deleteUser, getAllContactRequests } = require('../controllers/user.controller');
 const { profileImage } = require('../middlewares/upload');
 
 
@@ -15,10 +15,14 @@ const optionalAuth = require("../middlewares/optionalAuth")
 
 
 // Admin Section Routes
+
+router.put("/edit/:id", authMiddleware, profileImage, editEmployee);
+
+
 router.post('/add-employee', authMiddleware,  profileImage, addEmployee);
 router.get('/all-employees', authMiddleware, getAllEmployees);
 router.delete('/delete-employee/:id', authMiddleware, deleteEmployee);
-router.put('/update-employee/:id', authMiddleware,  profileImage, updateEmployee);
+// router.put('/update-employee/:id', authMiddleware,  profileImage, updateEmployee);
 router.get('/employee/:id', authMiddleware,  getEmployeeById);
 
 

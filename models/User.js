@@ -23,7 +23,7 @@ const User = sequelize.define("User", {
     defaultValue: "user",
   },
   profileImage: { type: DataTypes.STRING },
-  employeeId: { type: DataTypes.INTEGER },
+  employeeId: { type: DataTypes.STRING },
 },
   {
     timestamps: true,

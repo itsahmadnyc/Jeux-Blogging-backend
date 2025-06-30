@@ -170,7 +170,7 @@ exports.empDraftBlogs = async (req, res) => {
             ? user.profileImage
             : `${APP_BASE_URL}/uploads/${user.profileImage}`
           : null,
-        // add other fields if needed
+        
       },
       blogs: blogsWithUrl
     });

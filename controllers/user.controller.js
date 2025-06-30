@@ -2,8 +2,11 @@ const { User, Blog, Category, Like, Comment, ContactUs } = require("../models");
 const { sendEmail } = require("../services/emailService");
 const response = require("../utils/responseHandler");
 const bcrypt = require("bcryptjs");
+const fs = require("fs");
+const path = require("path");
 const jwt = require("jsonwebtoken");
 const { buildCommentTree } = require("../utils/buildCommentTree");
+const generateEmployeeId = require("../utils/empIdCreator");
 // const validateCommentWithAI = require("../utils/aiValidator");
 const APP_BASE_URL = process.env.BASE_URL;
 
@@ -14,13 +17,13 @@ const JWT_SECRET = process.env.JWT_SECRET || "SalaarSikandar@009";
 // ADD EMPLOYEE
 exports.addEmployee = async (req, res) => {
   try {
-    const { name, email, password, employeeId } = req.body;
+    const { name, email, password } = req.body;
 
     // Basic validation
-    if (!name || !email || !password || !employeeId) {
+    if (!name || !email || !password) {
       return response.badRequest(
         res,
-        "Name, email, Password and EmployeeId are required"
+        "Name, email, Password are required"
       );
     }
 
@@ -44,12 +47,15 @@ exports.addEmployee = async (req, res) => {
       ? `${APP_BASE_URL}/uploads/${req.file.filename}`
       : null;
 
+      const employeeId = generateEmployeeId(name);
+
+
     const employee = await User.create({
       name,
       email,
       password: hashedPassword,
       profileImage,
-      employeeId,
+      employeeId: employeeId,
       role: "employee", // FORCE ROLE AS EMPLOYEE
     });
 
@@ -91,6 +97,74 @@ exports.addEmployee = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+exports.editEmployee = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { name, password } = req.body;
+
+    if (!id) {
+      return response.badRequest(res, "Employee ID is required in params");
+    }
+
+    const employee = await User.findOne({ where: { id, role: "employee" } });
+    console.log(employee)
+
+    if (!employee) {
+      return response.notFound(res, "Employee not found");
+    }
+
+    // Update name
+    if (name) employee.name = name;
+
+    // Update password
+    if (password) {
+      if (password.length < 6) {
+        return response.badRequest(
+          res,
+          "Password must be at least 6 characters long"
+        );
+      }
+      employee.password = await bcrypt.hash(password, 10);
+    }
+
+    if (req.file) {
+      // Delete old image if it exists
+      if (employee.profileImage) {
+        const oldImageName = path.basename(employee.profileImage);
+        const oldImagePath = path.join(__dirname, "..", "uploads", oldImageName);
+
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+
+      // Save new image path
+      employee.profileImage = `${APP_BASE_URL}/uploads/${req.file.filename}`;
+    }
+
+    await employee.save();
+
+    return response.ok(res, "Employee updated successfully", {
+      id: employee.id,
+      name: employee.name,
+      email: employee.email,
+      profileImage: employee.profileImage,
+      employeeId: employee.employeeId,
+    });
+  } catch (error) {
+    console.error("Edit Employee Error:", error);
+    return response.internalServerError(res, "Failed to edit employee", {
+      error: error.message,
+    });
+  }
+};
+
 
 
 //GET ALL EMPLOYEE
@@ -147,56 +221,56 @@ exports.deleteEmployee = async (req, res) => {
 
 
 // UPDATE EMPLOYEE
-exports.updateEmployee = async (req, res) => {
-  try {
-    const { id } = req.params;
+// exports.updateEmployee = async (req, res) => {
+//   try {
+//     const { id } = req.params;
 
-    const { name, email, password, employeeId } = req.body;
-    const employee = await User.findOne({ where: { id, role: "employee" } });
+//     const { name, email, password, employeeId } = req.body;
+//     const employee = await User.findOne({ where: { id, role: "employee" } });
 
-    if (!employee) {
-      return response.notFound(res, "Employee not found");
-    }
+//     if (!employee) {
+//       return response.notFound(res, "Employee not found");
+//     }
 
-    if (name) employee.name = name;
-    if (email) employee.email = email;
-    if (employeeId) employee.employeeId = employeeId;
+//     if (name) employee.name = name;
+//     if (email) employee.email = email;
+//     if (employeeId) employee.employeeId = employeeId;
 
-    if (password) {
-      if (password.length < 6) {
-        return response.badRequest(
-          res,
-          "Password must be at least 6 characters long"
-        );
-      }
-      employee.password = await bcrypt.hash(password, 10);
-    }
+//     if (password) {
+//       if (password.length < 6) {
+//         return response.badRequest(
+//           res,
+//           "Password must be at least 6 characters long"
+//         );
+//       }
+//       employee.password = await bcrypt.hash(password, 10);
+//     }
 
-    if (req.file) {
-      const baseUrl = `${req.protocol}://${req.get("host")}`;
-      employee.profileImage = `${baseUrl}/uploads/${req.file.filename}`;
-    }
+//     if (req.file) {
+//       const baseUrl = `${req.protocol}://${req.get("host")}`;
+//       employee.profileImage = `${baseUrl}/uploads/${req.file.filename}`;
+//     }
 
-    await employee.save();
-    return res.status(200).json({
-      message: "Employee updated successfully",
-      status: 200,
-      data: {
-        id: employee.id,
-        name: employee.name,
-        email: employee.email,
-        employeeId: employee.employeeId,
-        profileImage: employee.profileImage,
-        role: employee.role,
-      },
-    });
-  } catch (error) {
-    console.error("Update Employee Error:", error);
-    return response.internalServerError(res, "Failed to update employee", {
-      error: error.message,
-    });
-  }
-};
+//     await employee.save();
+//     return res.status(200).json({
+//       message: "Employee updated successfully",
+//       status: 200,
+//       data: {
+//         id: employee.id,
+//         name: employee.name,
+//         email: employee.email,
+//         employeeId: employee.employeeId,
+//         profileImage: employee.profileImage,
+//         role: employee.role,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Update Employee Error:", error);
+//     return response.internalServerError(res, "Failed to update employee", {
+//       error: error.message,
+//     });
+//   }
+// };
 
 
 

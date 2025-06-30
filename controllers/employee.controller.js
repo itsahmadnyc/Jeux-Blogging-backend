@@ -81,7 +81,7 @@ exports.empPublishedBlogs = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    if(!userId){
+    if (!userId) {
       return response.notFound(res, "Token is missing or invalid")
     }
 
@@ -124,11 +124,14 @@ exports.empPublishedBlogs = async (req, res) => {
 };
 
 
+
+
 exports.empDraftBlogs = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    console.log("UserId is in Employee Draft Blogs:", userId);
+    const user = await User.findByPk(userId);
+
     const draftBlogs = await Blog.findAll({
       where: {
         userId: userId,
@@ -144,8 +147,8 @@ exports.empDraftBlogs = async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
 
-    if (!draftBlogs) {
-      return response.notFound(res, "Draft blogs are not found..!")
+    if (!draftBlogs || draftBlogs.length === 0) {
+      return response.notFound(res, "Draft blogs are not found..!");
     }
 
     const blogsWithUrl = draftBlogs.map(blog => {
@@ -156,13 +159,71 @@ exports.empDraftBlogs = async (req, res) => {
       return blogData;
     });
 
-    return response.ok(res, 'Draft blogs fetched successfully.', { blogs: blogsWithUrl });
+    return response.ok(res, 'Draft blogs fetched successfully.', {
+      authUser: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profileImage: user.profileImage
+          ? user.profileImage.startsWith("http")
+            ? user.profileImage
+            : `${APP_BASE_URL}/uploads/${user.profileImage}`
+          : null,
+        // add other fields if needed
+      },
+      blogs: blogsWithUrl
+    });
 
   } catch (error) {
     console.error('Error fetching draft blogs:', error);
-    return response.internalServerError(res, "Failed to fetch draft blogs..!", { error: error.message })
+    return response.internalServerError(res, "Failed to fetch draft blogs..!", {
+      error: error.message
+    });
   }
 };
+
+
+
+
+// exports.empDraftBlogs = async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+
+//     const draftBlogs = await Blog.findAll({
+//       where: {
+//         userId: userId,
+//         publish: false
+//       },
+//       include: [
+//         {
+//           model: Category,
+//           as: 'category',
+//           attributes: ['id', 'name']
+//         }
+//       ],
+//       order: [['createdAt', 'DESC']]
+//     });
+
+//     if (!draftBlogs) {
+//       return response.notFound(res, "Draft blogs are not found..!")
+//     }
+
+//     const blogsWithUrl = draftBlogs.map(blog => {
+//       const blogData = blog.toJSON();
+//       blogData.thumbnailUrl = blog.thumbnail
+//         ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
+//         : null;
+//       return blogData;
+//     });
+
+//     return response.ok(res, 'Draft blogs fetched successfully.', { blogs: blogsWithUrl });
+
+//   } catch (error) {
+//     console.error('Error fetching draft blogs:', error);
+//     return response.internalServerError(res, "Failed to fetch draft blogs..!", { error: error.message })
+//   }
+// };
 
 
 exports.updateEmployeeBlog = async (req, res) => {
@@ -221,7 +282,7 @@ exports.updateEmployeeBlog = async (req, res) => {
     if (wasUnpublished && isNowPublished) {
       await notifyAllSubscribersAndUsers(blog.title);
     }
-    
+
 
 
     const blogData = blog.toJSON();
@@ -322,6 +383,8 @@ exports.empDeleteOwnBlog = async (req, res) => {
 }
 
 
+
+
 exports.empGetBlogById = async (req, res) => {
   try {
     const blogId = req.params.id;
@@ -331,6 +394,8 @@ exports.empGetBlogById = async (req, res) => {
       return response.notFound(res, "Token is missing or inValid");
     }
 
+
+    console.log("blogId and userId", blogId, userId)
 
 
     const blog = await Blog.findOne({
@@ -347,7 +412,7 @@ exports.empGetBlogById = async (req, res) => {
         {
           model: User,
           as: 'author',
-          attributes: ['id', 'name', 'email'],
+          attributes: ['id', 'name', 'email', 'profileImage'],
         },
       ],
     });
@@ -370,7 +435,7 @@ exports.empGetBlogById = async (req, res) => {
     });
 
 
-    
+
 
     const nestedComments = buildCommentTree(comments);
 

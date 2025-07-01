@@ -41,7 +41,6 @@ exports.addEmployee = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // const baseUrl = `${req.protocol}://${req.get("host")}`;
 
     const profileImage = req.file
       ? `${APP_BASE_URL}/uploads/${req.file.filename}`

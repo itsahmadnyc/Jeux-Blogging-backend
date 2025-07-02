@@ -18,6 +18,7 @@ const newsletterRoutes = require("./routes/subscribe.routes")
 const publishDraftRoutes = require("./routes/emp-publish-draft.routes");
 const visitorRoutes = require('./routes/visitor.routes');
 const commentRoutes = require('./routes/comments.routes');
+const adsRoutes = require('./routes/ads.route')
 
 require('dotenv').config();
 const sequelize = require('./config/database');
@@ -44,6 +45,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+
 // Routes
 app.use('/api', uploadRoutes);
 app.use('/api', authRoutes);
@@ -56,6 +58,7 @@ app.use('/api', newsletterRoutes);
 app.use('/api/emp', publishDraftRoutes);
 app.use('/api', visitorRoutes);
 app.use('/api/blogs', commentRoutes);
+app.use('/api', adsRoutes)
 
 app.get("/", (req, res) => {
   res.status(200).json({

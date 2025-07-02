@@ -25,8 +25,6 @@ const Comment = sequelize.define('Comment', {
             model: 'comments', key: 'id'
         }
     },
-    
-    // content: { type: DataTypes.STRING },
 
     content: {
         type: DataTypes.TEXT,

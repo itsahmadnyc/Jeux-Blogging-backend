@@ -9,8 +9,6 @@ const APP_BASE_URL = process.env.BASE_URL;
 
 
 
-
-
 exports.createBlog = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -83,7 +81,9 @@ exports.empPublishedBlogs = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    console.log("User Is in Published Controller", userId)
+    if (!userId) {
+      return response.notFound(res, "Token is missing or invalid")
+    }
 
     const publishedBlogs = await Blog.findAll({
       where: {
@@ -124,11 +124,14 @@ exports.empPublishedBlogs = async (req, res) => {
 };
 
 
+
+
 exports.empDraftBlogs = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    console.log("UserId is in Employee Draft Blogs:", userId);
+    const user = await User.findByPk(userId);
+
     const draftBlogs = await Blog.findAll({
       where: {
         userId: userId,
@@ -144,8 +147,8 @@ exports.empDraftBlogs = async (req, res) => {
       order: [['createdAt', 'DESC']]
     });
 
-    if (!draftBlogs) {
-      return response.notFound(res, "Draft blogs are not found..!")
+    if (!draftBlogs || draftBlogs.length === 0) {
+      return response.notFound(res, "Draft blogs are not found..!");
     }
 
     const blogsWithUrl = draftBlogs.map(blog => {
@@ -156,13 +159,71 @@ exports.empDraftBlogs = async (req, res) => {
       return blogData;
     });
 
-    return response.ok(res, 'Draft blogs fetched successfully.', { blogs: blogsWithUrl });
+    return response.ok(res, 'Draft blogs fetched successfully.', {
+      authUser: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profileImage: user.profileImage
+          ? user.profileImage.startsWith("http")
+            ? user.profileImage
+            : `${APP_BASE_URL}/uploads/${user.profileImage}`
+          : null,
+        
+      },
+      blogs: blogsWithUrl
+    });
 
   } catch (error) {
     console.error('Error fetching draft blogs:', error);
-    return response.internalServerError(res, "Failed to fetch draft blogs..!", { error: error.message })
+    return response.internalServerError(res, "Failed to fetch draft blogs..!", {
+      error: error.message
+    });
   }
 };
+
+
+
+
+// exports.empDraftBlogs = async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+
+//     const draftBlogs = await Blog.findAll({
+//       where: {
+//         userId: userId,
+//         publish: false
+//       },
+//       include: [
+//         {
+//           model: Category,
+//           as: 'category',
+//           attributes: ['id', 'name']
+//         }
+//       ],
+//       order: [['createdAt', 'DESC']]
+//     });
+
+//     if (!draftBlogs) {
+//       return response.notFound(res, "Draft blogs are not found..!")
+//     }
+
+//     const blogsWithUrl = draftBlogs.map(blog => {
+//       const blogData = blog.toJSON();
+//       blogData.thumbnailUrl = blog.thumbnail
+//         ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
+//         : null;
+//       return blogData;
+//     });
+
+//     return response.ok(res, 'Draft blogs fetched successfully.', { blogs: blogsWithUrl });
+
+//   } catch (error) {
+//     console.error('Error fetching draft blogs:', error);
+//     return response.internalServerError(res, "Failed to fetch draft blogs..!", { error: error.message })
+//   }
+// };
 
 
 exports.updateEmployeeBlog = async (req, res) => {
@@ -221,7 +282,7 @@ exports.updateEmployeeBlog = async (req, res) => {
     if (wasUnpublished && isNowPublished) {
       await notifyAllSubscribersAndUsers(blog.title);
     }
-    
+
 
 
     const blogData = blog.toJSON();
@@ -275,7 +336,7 @@ exports.employeeStatus = async (req, res) => {
     });
 
 
-    return response.ok(res, 'Employee Stats records are', {
+    return response.ok(res, 'Employee Status records are', {
       totalBlogs,
       publishedBlogs,
       draftBlogs,
@@ -322,6 +383,8 @@ exports.empDeleteOwnBlog = async (req, res) => {
 }
 
 
+
+
 exports.empGetBlogById = async (req, res) => {
   try {
     const blogId = req.params.id;
@@ -330,6 +393,9 @@ exports.empGetBlogById = async (req, res) => {
     if (!userId) {
       return response.notFound(res, "Token is missing or inValid");
     }
+
+
+    console.log("blogId and userId", blogId, userId)
 
 
     const blog = await Blog.findOne({
@@ -346,10 +412,11 @@ exports.empGetBlogById = async (req, res) => {
         {
           model: User,
           as: 'author',
-          attributes: ['id', 'name', 'email'],
+          attributes: ['id', 'name', 'email', 'profileImage'],
         },
       ],
     });
+
 
     if (!blog) {
       return response.notFound(res, "Blog not found or you're not authorized to view it.");
@@ -366,6 +433,9 @@ exports.empGetBlogById = async (req, res) => {
       ],
       order: [['createdAt', 'ASC']],
     });
+
+
+
 
     const nestedComments = buildCommentTree(comments);
 
@@ -389,6 +459,8 @@ exports.empGetBlogById = async (req, res) => {
     });
   }
 };
+
+
 
 
 

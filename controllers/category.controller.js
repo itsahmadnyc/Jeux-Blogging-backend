@@ -9,16 +9,16 @@ exports.addCategory = async (req, res) => {
         const userId = req.user.id;
 
 
-        if (!name || !description) {
-            return response.badRequest(res, 'Name and Description are required!');
+        if (!name) {
+            return response.badRequest(res, 'Name is required!');
         }
 
-        const trimmedName = name.trim();
-        const trimmedDescription = description.trim();
+        // const trimmedName = name.trim();
+        // const trimmedDescription = description.trim();
 
         // Check if category with the same name exists (case insensitive)
         const existing = await Category.findOne({
-            where: { name: trimmedName }
+            where: { name: name }
         });
 
         if (existing) {
@@ -26,8 +26,8 @@ exports.addCategory = async (req, res) => {
         }
 
         const category = await Category.create({
-            name: trimmedName,
-            description: trimmedDescription,
+            name: name,
+            description: description,
             userId,
         });
 
@@ -116,7 +116,6 @@ exports.getCategoryById = async (req, res) => {
         where: { id },
         attributes: ['id', 'name', 'description', 'createdAt', 'updatedAt']
       });
-      console.log("Categoty is :", category)
   
       if (!category) {
         return response.notFound(res, 'Category not found');
@@ -129,6 +128,7 @@ exports.getCategoryById = async (req, res) => {
       return response.internalServerError(res, 'Failed to fetch category', { error: error.message });
     }
   };
+  
 
   
   

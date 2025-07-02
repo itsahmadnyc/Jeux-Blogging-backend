@@ -5,6 +5,8 @@ const Subscriber = require("../models/Subscriber");
 const { sendEmail } = require("../services/emailService");
 const response = require("../utils/responseHandler");
 
+
+
 exports.subscriber = async (req, res) => {
     try {
         const userId = req.user.id;

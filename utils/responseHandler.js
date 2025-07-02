@@ -62,6 +62,7 @@ const ok = (res, message = 'Request successful', data = {}) => {
     });
   };
   
+  
   const unauthorized = (res, message = 'Unauthorized access', details = {}) => {
     return res.status(401).json({
       success: false,
@@ -92,6 +93,8 @@ const ok = (res, message = 'Request successful', data = {}) => {
     });
   };
   
+
+
   const internalServerError = (res, message = 'Internal server error', details = {}) => {
     return res.status(500).json({
       success: false,
@@ -163,13 +166,13 @@ response.internalServerError(res, 'Database crashed', { error: err.message });
     created,
     updated,
     deleted,
-  
     badRequest,
     unauthorized,
     forbidden,
     notFound,
     internalServerError,
     notImplemented,
+    
   };
   
   

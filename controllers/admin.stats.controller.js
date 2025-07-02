@@ -2,7 +2,6 @@ const { User, Blog, Comment, Like, Category, UserVisit } = require("../models");
 const response = require('../utils/responseHandler');
 const { Op } = require("sequelize");
 const path = require('path');
-
 const APP_BASE_URL = process.env.BASE_URL;
 
 
@@ -17,7 +16,6 @@ exports.adminStats = async (req, res) => {
     });
 
     const totalComments = await Comment.count();
-
 
     const totalUserVisits = await UserVisit.count();
 
@@ -78,7 +76,6 @@ exports.adminGetEmpDetailsById = async (req, res) => {
       return response.notFound(res, 'Employee not found');
     }
 
-
     const blogs = await Blog.findAll({
       where: { userId: employeeId, publish: true, },
       attributes: ['id', 'title', 'content', 'thumbnail', 'publish', 'createdAt', 'updatedAt'],
@@ -107,10 +104,7 @@ exports.adminGetEmpDetailsById = async (req, res) => {
     });
 
     const blogIds = blogs.map(blog => blog.id);
-
-
     const totalBlogs = blogs.length;
-
 
     const totalPublishedBlogs = blogs.filter(blog => blog.publish === true).length;
     // const totalDraftBlogs = blogs.filter(blog => blog.publish === false).length;

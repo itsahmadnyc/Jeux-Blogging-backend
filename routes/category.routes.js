@@ -5,12 +5,8 @@ const authMiddleware = require('../middlewares/auth.middleware');
 const checkAdmin = require('../middlewares/admin/checkAdmin');
 
 
-
-
-
-
 router.post('/add-category', authMiddleware, checkAdmin, addCategory);
-router.get('/all-categories', authMiddleware, getAllCategories);
+router.get('/all-categories',  getAllCategories);
 router.put('/update-category/:id', authMiddleware, updateCategory);
 router.delete('/delete-category/:id', authMiddleware, deleteCategory);
 router.get('/:id', authMiddleware, checkAdmin, getCategoryById);

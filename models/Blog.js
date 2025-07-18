@@ -6,6 +6,7 @@ const Blog = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     title: { type: DataTypes.STRING, allowNull: false },
+    blogUrl: { type: DataTypes.STRING, allowNull: false, unique: true },
     blogAuthor: { type: DataTypes.STRING },
     content: { type: DataTypes.TEXT, allowNull: false },
     publish: { type: DataTypes.BOOLEAN, defaultValue: false },

@@ -19,10 +19,17 @@ exports.createBlog = async (req, res) => {
       categoryId,
       tags,
       publish,
+      blogUrl
     } = req.body;
 
-    if (!title || !content || !categoryId) {
-      return response.badRequest(res, 'Title, content, and categoryId are required.');
+    if (!title || !content || !categoryId || !blogUrl) {
+      return response.badRequest(res, 'Title, content, blogUrl and categoryId are required.');
+    }
+
+    // Check if blogUrl already exists
+    const existingBlog = await Blog.findOne({ where: { blogUrl } });
+    if (existingBlog) {
+      return response.badRequest(res, 'Blog URL already exists. Please use a different URL.');
     }
 
     const category = await Category.findByPk(categoryId);
@@ -30,7 +37,6 @@ exports.createBlog = async (req, res) => {
       return response.badRequest(res, 'Invalid categoryId. Category not found.');
     }
 
-    // Handle thumbnail upload
     let thumbnail = null;
     let thumbnailUrl = null;
     if (req.file) {
@@ -47,18 +53,13 @@ exports.createBlog = async (req, res) => {
       publish,
       tags,
       thumbnail,
+      blogUrl
     });
-
 
     const publishFlag = publish === 'true' || publish === true || publish === 1 || publish === '1';
     if (publishFlag) {
       await notifyAllSubscribersAndUsers(newBlog.title);
     }
-
-
-    // if (publish === true || publish === 1) {
-    //   await notifyAllSubscribersAndUsers(newBlog.title);
-    // }
 
     const blogData = {
       ...newBlog.toJSON(),
@@ -237,6 +238,7 @@ exports.updateEmployeeBlog = async (req, res) => {
       categoryId,
       tags,
       publish,
+      blogUrl
     } = req.body;
 
     const blog = await Blog.findOne({ where: { id: blogId, userId } });
@@ -245,10 +247,20 @@ exports.updateEmployeeBlog = async (req, res) => {
       return response.notFound(res, 'Blog not found or not authorized to update.');
     }
 
-    // PARSE AND VALIDATE INPUTS
+    if (blogUrl && blogUrl !== blog.blogUrl) {
+      const existingBlog = await Blog.findOne({ 
+        where: { 
+          blogUrl,
+          id: { [Op.ne]: blogId } 
+        } 
+      });
+      if (existingBlog) {
+        return response.badRequest(res, 'Blog URL already exists. Please use a different URL.');
+      }
+    }
+
     const parsedCategoryId = categoryId ? parseInt(categoryId) : blog.categoryId;
     const publishFlag = publish === 'true' || publish === true || publish === 1 || publish === '1';
-
 
     if (parsedCategoryId !== blog.categoryId) {
       const category = await Category.findByPk(parsedCategoryId);
@@ -256,7 +268,6 @@ exports.updateEmployeeBlog = async (req, res) => {
         return response.badRequest(res, 'Invalid categoryId. Category not found.');
       }
     }
-
 
     let thumbnail = blog.thumbnail;
     if (req.file) {
@@ -267,7 +278,6 @@ exports.updateEmployeeBlog = async (req, res) => {
     const wasUnpublished = blog.publish === false;
     const isNowPublished = publishFlag === true;
 
-
     await blog.update({
       title: title || blog.title,
       blogAuthor: blogAuthor || blog.blogAuthor,
@@ -276,14 +286,13 @@ exports.updateEmployeeBlog = async (req, res) => {
       publish: publishFlag,
       tags: tags || blog.tags,
       thumbnail,
+      blogUrl: blogUrl || blog.blogUrl
     });
 
     // SEND NOTIFICATION IF BLOG IS NEWELY PUBLISHED
     if (wasUnpublished && isNowPublished) {
       await notifyAllSubscribersAndUsers(blog.title);
     }
-
-
 
     const blogData = blog.toJSON();
     blogData.thumbnailUrl = thumbnail ? `${APP_BASE_URL}/uploads/${thumbnail}` : null;

@@ -16,7 +16,7 @@ router.get('/top-posts', getTopFiveBlogs);
 router.get('/comments/:blogId', authMiddleware, checkAdmin, getCommentsByBlog);
 router.delete('/delete/:blogId', authMiddleware, checkAdmin, deleteBlogComments);
 
-router.get('/global-blog/:id', globalBlogDetailsById);
+router.get('/global-blog/:blogUrl', globalBlogDetailsById);
 
 
 

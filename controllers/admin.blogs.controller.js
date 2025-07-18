@@ -125,10 +125,10 @@ exports.deleteBlogComments = async (req, res) => {
 
 exports.globalBlogDetailsById = async (req, res) => {
   try {
-    const blogId = req.params.id;
+    const blogUrl = req.params.blogUrl;
 
     const blog = await Blog.findOne({
-      where: { id: blogId },
+      where: { blogUrl: blogUrl },
       include: [
         {
           model: Category,
@@ -153,7 +153,7 @@ exports.globalBlogDetailsById = async (req, res) => {
     }
 
     const comments = await Comment.findAll({
-      where: { blogId },
+      where: { blogId: blog.id }, // Fixed: use blog.id instead of undefined blogId
       include: [
         {
           model: User,
@@ -170,33 +170,33 @@ exports.globalBlogDetailsById = async (req, res) => {
     const blogData = blog.toJSON();
     const blogLikes = blogData.likes || [];
 
-   const reactionCounts = {};
-   for(const like of blogLikes){
-    if(!reactionCounts[like.type]){
-      reactionCounts[like.type] = 1;
-    }else{
-      reactionCounts[like.type]++;
+    const reactionCounts = {};
+    for(const like of blogLikes){
+      if(!reactionCounts[like.type]){
+        reactionCounts[like.type] = 1;
+      }else{
+        reactionCounts[like.type]++;
+      }
     }
-   }
 
-   blogData.reactions = reactionCounts;
-   blogData.totalLikes = reactionCounts['👍'] || 0;
-   blogData.totalDislikes = reactionCounts['👎'] || 0;
+    blogData.reactions = reactionCounts;
+    blogData.totalLikes = reactionCounts['👍'] || 0;
+    blogData.totalDislikes = reactionCounts['👎'] || 0;
 
-   blogData.thumbnailUrl = blogData.thumbnail
-   ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
-   : null;
+    blogData.thumbnailUrl = blogData.thumbnail
+      ? `${APP_BASE_URL}/uploads/${blog.thumbnail}`
+      : null;
 
-blogData.totalComments = totalComments;
-blogData.comments = nestedComments;
+    blogData.totalComments = totalComments;
+    blogData.comments = nestedComments;
 
-const authorId = blogData.author?.id;
-if(authorId){
-  const authorBlogCount = await Blog.count({
-    where:{ userId : authorId, publish: true},
-  });
-  blogData.author.totalBlogs = authorBlogCount;
-}
+    const authorId = blogData.author?.id;
+    if(authorId){
+      const authorBlogCount = await Blog.count({
+        where:{ userId : authorId, publish: true},
+      });
+      blogData.author.totalBlogs = authorBlogCount;
+    }
 
     return response.ok(res, 'Blog fetched successfully.', { blog: blogData });
 

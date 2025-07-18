@@ -36,6 +36,7 @@ exports.globalReadAllBlogs = async (req, res) => {
       return {
         id: blogData.id,
         title: blogData.title,
+        blogUrl: blogData.blogUrl,
         content: blogData.content,
         publish: blogData.publish,
         createdAt: blogData.createdAt,
@@ -333,6 +334,7 @@ exports.getTopFiveBlogs = async (req, res) => {
     const formatted = blogs.map(blog => ({
       id: blog.id,
       title: blog.title,
+      blogUrl: blog.blogUrl,
       content: blog.content,
       publish: blog.publish,
       thumbnail: blog.thumbnail ? `${APP_BASE_URL}/uploads/${path.basename(blog.thumbnail)}` : null,

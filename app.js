@@ -19,6 +19,7 @@ const publishDraftRoutes = require("./routes/emp-publish-draft.routes");
 const visitorRoutes = require('./routes/visitor.routes');
 const commentRoutes = require('./routes/comments.routes');
 const adsRoutes = require('./routes/ads.route')
+const generateSitemap = require('./routes/sitemap'); 
 
 require('dotenv').config();
 const sequelize = require('./config/database');
@@ -44,6 +45,8 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.get('/sitemap.xml', generateSitemap);
 
 
 // Routes

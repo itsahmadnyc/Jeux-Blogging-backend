@@ -4,8 +4,8 @@
   "description": "Express API with SQL Database",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
-    "dev": "nodemon server.js"
+    "start": "node init && nodemon server.js",
+    "dev": "node init && nodemon server.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
